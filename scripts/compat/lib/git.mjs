@@ -1,17 +1,25 @@
-// Commits a small data change to the shared branch. Many builds push to the same branch at about the
-// same time, so the change is expressed as a function that is re-applied to a fresh checkout until a
-// push lands.
+// git for the scripts that write to the repository: open-pr.mjs, and commitAndPush below for the
+// parked watcher.
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { capture, run } from './proc.mjs';
 
-const AUTHOR = ['-c', 'user.name=rn.green bot', '-c', 'user.email=rn-green-bot@users.noreply.github.com'];
+export const AUTHOR = ['-c', 'user.name=rn.green bot', '-c', 'user.email=rn-green-bot@users.noreply.github.com'];
+
+/**
+ * Environment and arguments for git calls that hold the token. The library's own code ran earlier on
+ * the same machine and could have changed the user's or the system's git configuration (a credential
+ * helper, hooks, templates), so git reads neither, runs no hooks and never prompts. This narrows what
+ * planted configuration can do; it is not isolation from a machine the library ran on.
+ */
+export const ISOLATED_GIT_ENV = { GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1', GIT_TERMINAL_PROMPT: '0' };
+export const ISOLATED_GIT_ARGS = ['-c', 'core.hooksPath=/dev/null'];
 
 /**
  * git arguments that supply GITHUB_TOKEN to github.com without writing it anywhere: the helper reads
  * the variable when git asks, so the token is never in a URL, in .git/config or in the log.
  */
-function credentialArgs(env) {
+export function credentialArgs(env) {
   if (!env.GITHUB_TOKEN) return [];
   return [
     '-c',
@@ -29,6 +37,9 @@ export function remoteFor(env) {
 }
 
 /**
+ * Commits a small data change to a shared branch. Many runs push to the same branch at about the same
+ * time, so the change is expressed as a function that is re-applied to a fresh checkout until a push
+ * lands. Used by the parked watcher (watch.mjs).
  * @param {object} options
  * @param {string} options.repoDir     a clone of the data repository (its working tree is reset)
  * @param {string} options.branch

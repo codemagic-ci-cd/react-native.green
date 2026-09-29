@@ -58,7 +58,7 @@ export function applyCell(file, name, { libraryLine, reactNativeLine, cell }) {
 }
 
 /**
- * The file as the watcher writes it: only lines the catalog lists (a retired line is dropped), library
+ * The file as it is written: only lines the catalog lists (a retired line is dropped), library
  * lines newest first, React Native lines ascending.
  * @param {string[]} libraryLines  the package's lines in the catalog
  * @param {string[]} reactNativeLines  the catalog's React Native lines

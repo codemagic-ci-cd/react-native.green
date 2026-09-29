@@ -1,7 +1,7 @@
-// Last step of compatibility-check: save the three check outcomes as compat-results/result.json, the
-// build artifact the watcher records from. It holds nothing else: the watcher takes the package and
-// versions from the build's inputs as Codemagic reports them, and composes the cell itself. Fails if
-// a check never ran.
+// Step 8 of compatibility-check: save the three check outcomes as compat-results/result.json, which
+// open-pr.mjs sends and which is kept as a build artifact. It holds nothing else: open-pr.mjs takes the
+// package and versions from the build's inputs and composes the cell itself. Fails if a check never
+// ran.
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { outDir, readJson, writeJson } from './lib/config.mjs';

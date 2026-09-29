@@ -1,14 +1,16 @@
-# rn.green compatibility workflows. How they fit together, the credentials they need, and how to run
-# them are described in the README ("Compatibility workflows").
+# rn.green compatibility workflow. What it does, the credential it needs and how to run it are
+# described in the README ("Compatibility workflow").
 #
 # Inputs reach the scripts only through environment.vars and are read there as environment variables.
 # `${{ inputs.* }}` is never written into a script body: that is text substitution, and anyone who
 # can start a build chooses the text.
 
 workflows:
-  # One cell per build: a library version on a React Native version. This workflow runs the library's
-  # own code (install scripts, tests, Gradle, CocoaPods), so it has no credentials at all. It only
-  # leaves its result as an artifact; watch-releases records it.
+  # One cell per build: a library version on a React Native version, started by hand. It checks the
+  # cell and sends the result to this repository as a pull request, so it holds GITHUB_TOKEN (group
+  # default). It also runs the library's own code (install scripts, tests, Gradle, CocoaPods):
+  # our scripts keep the token out of every command they start, but that is not isolation, which is
+  # why main must only change through a reviewed pull request (README, "Credentials").
   compatibility-check:
     name: Compatibility check
     instance_type: mac_mini_m2
@@ -24,10 +26,12 @@ workflows:
         description: Exact React Native version, for example 0.87.1 or 0.88.0-rc.3 (with record on, on a line green-packages.toml lists)
         type: string
       record:
-        description: Let watch-releases record the result. Off records nothing and accepts any exact versions and a disabled package, to try draft settings
+        description: Open a pull request with the result (off runs the checks and opens nothing, and accepts any exact versions and a disabled package, to try draft settings)
         type: boolean
         default: true
     environment:
+      groups:
+        - default
       vars:
         COMPAT_PACKAGE: ${{ inputs.package }}
         COMPAT_LIBRARY_VERSION: ${{ inputs.library_version }}
@@ -61,40 +65,12 @@ workflows:
         script: node scripts/compat/check.mjs ios
       - name: Save the result
         script: node scripts/compat/compose-result.mjs
+      - name: Open a pull request with the result
+        script: node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/compat/open-pr.mjs
     artifacts:
-      # result.json on its own, so the watcher can download it as a single small file.
       - compat-results/result.json
       - compat-results/inputs.json
       - compat-results/swap.json
       - compat-results/checks/*.json
       - compat-results/logs/*
 
-  # Scheduled in the Codemagic UI. The only workflow that writes to the repository: it records
-  # finished checks, refreshes versions from npm, and starts compatibility-check builds. It runs no
-  # third-party code.
-  watch-releases:
-    name: Watch releases
-    instance_type: linux_x2
-    max_build_duration: 30
-    inputs:
-      max_builds:
-        description: How many compatibility-check builds to start in this run
-        type: number
-        default: 12
-      dry_run:
-        description: Print what it would record, change and start, and do nothing else
-        type: boolean
-        default: false
-    environment:
-      groups:
-        - rn_green_push
-        - rn_green_api
-      vars:
-        WATCH_MAX_BUILDS: ${{ inputs.max_builds }}
-        WATCH_DRY_RUN: ${{ inputs.dry_run }}
-      node: 22
-    scripts:
-      - name: Install the site's validation dependencies
-        script: npm ci --ignore-scripts
-      - name: Record results, refresh versions, start checks
-        script: node --experimental-strip-types --disable-warning=ExperimentalWarning scripts/compat/watch.mjs

@@ -69,6 +69,23 @@ function withOperator(previous, version) {
 const dependencyOf = (manifest, name) =>
   DEPENDENCY_FIELDS.map((field) => manifest[field]?.[name]).find((value) => value !== undefined);
 
+/**
+ * True for a dependency spec that installs from the registry: a version, a range or a tag. False for
+ * the protocols that already point elsewhere (workspace:, link:, file:, portal:, git and URLs) and for
+ * paths.
+ */
+export function isRegistrySpec(spec) {
+  return typeof spec === 'string' && !spec.includes(':') && !/^[./~]/.test(spec);
+}
+
+/**
+ * How the demo app should depend on the checked-out package: `link:` for yarn and pnpm, `file:` for
+ * npm, with the path from the demo app's folder to the package's folder.
+ */
+export function localSpec(manager, relativePath) {
+  return `${manager === 'npm' ? 'file' : 'link'}:${relativePath}`;
+}
+
 /** Which of the three cases applies, from the React Native version the demo app already pins. */
 export function swapCase(demoReactNative, target) {
   const current = exactPart(demoReactNative);
@@ -84,8 +101,10 @@ export function swapCase(demoReactNative, target) {
  * @param {string} options.demoFile  which of them is the demo app's
  * @param {'bare' | 'expo'} options.demoKind
  * @param {string} options.target  exact React Native version
+ * @param {{ name: string, spec: string }} [options.library]  the package under test, and the spec
+ *   (from localSpec) that points the demo app at its checked-out folder
  */
-export function planSwap({ manifests, demoFile, demoKind, target, registry }) {
+export function planSwap({ manifests, demoFile, demoKind, target, registry, library }) {
   const targetLine = lineOf(target);
   const demo = manifests.find((m) => m.file === demoFile)?.manifest ?? {};
   const demoReactNative =
@@ -178,8 +197,22 @@ export function planSwap({ manifests, demoFile, demoKind, target, registry }) {
     return { file, manifest: next };
   };
 
+  // In every case, "same" included: a demo app that names the library under test with a registry
+  // version would build that published version, not the tagged code, so it is pointed at the
+  // checked-out package instead.
+  const pointAtCheckout = ({ file, manifest }) => {
+    if (file !== demoFile || !library) return { file, manifest };
+    for (const field of DEPENDENCY_FIELDS) {
+      const current = manifest[field]?.[library.name];
+      if (!isRegistrySpec(current)) continue;
+      manifest[field][library.name] = library.spec;
+      changes.push({ file, name: library.name, from: current, to: library.spec, reason: 'the checked-out package instead of the published one' });
+    }
+    return { file, manifest };
+  };
+
   return {
-    manifests: manifests.map(swapManifest),
+    manifests: manifests.map(swapManifest).map(pointAtCheckout),
     swapCase: kind,
     fromReactNative: demoReactNative ?? null,
     expoSdk: expo && !keepExpo ? expo.sdk : null,

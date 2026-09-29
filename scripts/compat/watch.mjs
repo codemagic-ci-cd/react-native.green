@@ -1,4 +1,9 @@
-// watch-releases, the only workflow that writes to the repository. One run:
+// Parked: no workflow runs this at the moment. Builds are started by hand and each one sends its own
+// result as a pull request (open-pr.mjs). It is kept, with lib/watch.mjs, lib/collect.mjs,
+// lib/codemagic.mjs, lib/registry.mjs, lib/catalog-edit.mjs and their tests, for the later work on
+// detecting new releases; the text below describes what it does when run.
+//
+// watch-releases, as it was: one run
 //   1. records the results of finished compatibility-check builds (from their result.json artifact),
 //   2. compares green-packages.toml with npm: a release that is not listed is a new target,
 //   3. finds the cells that need a build,

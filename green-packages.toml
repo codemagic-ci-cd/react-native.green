@@ -1,17 +1,14 @@
 # The rn.green catalog: which packages are covered, which versions are checked, and how each
-# package is tested and built. The site lists what is here, and the Codemagic workflows run from it:
+# package is tested and built. The site lists what is here, and the Codemagic workflow runs from it:
 #
-#   - watch-releases compares this file with npm. A release that is not listed here is a new target:
-#     it is added to `versions`, and a compatibility-check build is started for every pair of library
-#     version and React Native version that has no result yet.
-#   - compatibility-check tests one pair, following the package's source, setup, test and demo
-#     settings below.
+#   - compatibility-check tests one pair of library version and React Native version, following the
+#     package's source, setup, test and demo settings below, and sends the result as a pull request.
+#     A person starts it by hand. With `record` on, both versions must be on lines listed here.
 #
 # Results are not kept here. They are in compatibility-data/<package name>/compatibility.json.
 #
 # Patch releases are folded into minor lines, so `versions` holds one version per line: its newest
-# patch. watch-releases changes only the `versions` arrays and leaves everything else, comments
-# included, as written. The README describes every field.
+# patch. New releases are added by hand for now. The README describes every field.
 
 schema = 1
 
@@ -35,8 +32,8 @@ versions = [
 # ---------------------------------------------------------------------------------------------
 # Packages, in name order. Every package with settings is checked.
 #
-# `enabled = false` on a package keeps it on the site and stops watch-releases from starting checks
-# for it, for example while its settings are being fixed. No package uses it now.
+# `enabled = false` on a package keeps it on the site and refuses checks with `record` on, for
+# example while its settings are being fixed. No package uses it now.
 # ---------------------------------------------------------------------------------------------
 
 [[package]]

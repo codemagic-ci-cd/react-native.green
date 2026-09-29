@@ -3,14 +3,14 @@
 // every change. The repository root, the package's own folder and the demo app are swapped together
 // so the workspace resolves one React Native version.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, posix } from 'node:path';
 import { outDir, readJson, writeJson } from './lib/config.mjs';
 import { gradleVersionOf, planGradleWrapper, withDistributionUrl, WRAPPER_PROPERTIES } from './lib/gradle.mjs';
-import { detectDemoKind, readInputs, repoPath } from './lib/library.mjs';
+import { detectDemoKind, packageManager, readInputs, repoPath } from './lib/library.mjs';
 import { fail } from './lib/proc.mjs';
 import { gatherSwapRegistry } from './lib/registry.mjs';
 import { lineOf } from './lib/semver.mjs';
-import { formatSwap, planSwap } from './lib/swap.mjs';
+import { formatSwap, localSpec, planSwap } from './lib/swap.mjs';
 
 const inputs = readInputs();
 const { packageDir, demoApp } = inputs.settings;
@@ -31,7 +31,12 @@ try {
   fail(`Could not read the npm registry: ${error.message}`);
 }
 
-const plan = planSwap({ manifests, demoFile, demoKind, target, registry });
+// The demo app is pointed at the checked-out package when it names a published version of it.
+const library = {
+  name: inputs.package,
+  spec: localSpec(packageManager(repoPath(demoApp)), posix.relative(demoApp, packageDir === '.' ? '' : packageDir) || '.'),
+};
+const plan = planSwap({ manifests, demoFile, demoKind, target, registry, library });
 for (const { file, manifest } of plan.manifests) writeFileSync(repoPath(file), `${JSON.stringify(manifest, null, 2)}\n`);
 
 // The Gradle wrapper follows the React Native version in every case, even when no package version

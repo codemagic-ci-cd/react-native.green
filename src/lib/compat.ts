@@ -5,8 +5,6 @@ import { z } from 'zod';
 const LINE_KEY = /^(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 // major.minor.patch with an optional prerelease such as "-rc.3".
 const SEMVER = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/;
-// npm's rules for package names: lowercase, URL-safe, optionally scoped, at most 214 characters.
-const PACKAGE_NAME = /^(?:@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/;
 
 const lineKey = z.string().regex(LINE_KEY, 'must be a minor line such as "0.87"');
 // Versions end up in chips and row headers, so a runaway prerelease tag is capped.
@@ -148,7 +146,7 @@ export function packageWithoutResults(entry: CatalogEntry): Package {
 /**
  * Validates one results file for a package of the catalog. The file must name that package, and
  * each result's tested versions must be on its lines. Results on a line the catalog does not list
- * (either axis) are valid but not shown; the watcher drops them the next time it writes the file.
+ * (either axis) are valid but not shown; they are dropped the next time a result is written to the file.
  */
 export function parseResultsFile(raw: unknown, file: string, entry: CatalogEntry, rnLines: ReactNativeLine[]): Package {
   const data = parseWith(resultsFileSchema, raw, file);

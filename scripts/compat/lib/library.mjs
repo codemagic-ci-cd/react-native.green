@@ -3,6 +3,7 @@
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 import { libraryDir, outDir, readJson, workDir } from './config.mjs';
+import { nodeDir } from './node-dist.mjs';
 
 /** The validated inputs, with the package's settings from the catalog. */
 export function readInputs(env = process.env) {
@@ -50,15 +51,18 @@ export function commands(manager) {
 /**
  * Environment for every command that runs library code: the package's own settings, then ours.
  * Corepack shims live in the work folder so each folder's declared package manager is used without
- * touching the machine's global install. Lockfile changes are expected after the swap, so installs
- * are never immutable.
+ * touching the machine's global install. The Node that setup.node asks for, when the install step
+ * downloaded one, comes first. Lockfile changes are expected after the swap, so installs are never
+ * immutable.
  */
 export function toolEnv(settings, env = process.env) {
   const bin = join(workDir(env), 'bin');
   mkdirSync(bin, { recursive: true });
+  const nodeBin = join(nodeDir(workDir(env)), 'bin');
+  const first = existsSync(nodeBin) ? [nodeBin, bin] : [bin];
   return {
     ...settings.env,
-    PATH: `${bin}${delimiter}${env.PATH ?? ''}`,
+    PATH: [...first, env.PATH ?? ''].join(delimiter),
     CI: '1',
     COREPACK_ENABLE_DOWNLOAD_PROMPT: '0',
     YARN_ENABLE_IMMUTABLE_INSTALLS: 'false',

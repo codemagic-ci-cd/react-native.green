@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import tags from '../fixtures/library-manifests.json' with { type: 'json' };
 import registryFixture from '../fixtures/registry.json' with { type: 'json' };
 import { lineOf } from './semver.mjs';
-import { chooseExpoSdk, chooseJestPreset, formatSwap, pickLineVersion, planSwap, swapCase } from './swap.mjs';
+import { chooseExpoSdk, chooseJestPreset, formatSwap, isRegistrySpec, localSpec, pickLineVersion, planSwap, swapCase } from './swap.mjs';
 
 // Registry data captured from npm on 2026-09-29 (see fixtures/registry.json), shaped as
 // gatherSwapRegistry returns it for one target.
@@ -207,3 +207,74 @@ describe('fallbacks and monorepos', () => {
     expect(text).toContain('package.json  react-native: 0.87.1 -> 0.84.1');
   });
 });
+
+describe('pointing the demo app at the checked-out package', () => {
+  const library = { name: '@codemagic/react-native-patch', spec: localSpec('yarn', '../../client') };
+  const demo = (spec) => ({ dependencies: { 'react-native': '0.84.1', '@codemagic/react-native-patch': spec } });
+  const plan = (spec, target = '0.84.1', lib = library) =>
+    planSwap({
+      manifests: [
+        { file: 'package.json', manifest: { devDependencies: {} } },
+        { file: 'examples/on-device-demo/package.json', manifest: demo(spec) },
+      ],
+      demoFile: 'examples/on-device-demo/package.json',
+      demoKind: 'bare',
+      target,
+      registry: registryFor(target),
+      library: lib,
+    });
+  const demoDeps = (p) => p.manifests[1].manifest.dependencies;
+
+  it('replaces a registry version, even when no package version changes', () => {
+    const same = plan('0.1.0');
+    expect(same.swapCase).toBe('same');
+    expect(demoDeps(same)['@codemagic/react-native-patch']).toBe('link:../../client');
+    expect(same.changes).toEqual([
+      {
+        file: 'examples/on-device-demo/package.json',
+        name: '@codemagic/react-native-patch',
+        from: '0.1.0',
+        to: 'link:../../client',
+        reason: 'the checked-out package instead of the published one',
+      },
+    ]);
+    expect(formatSwap(same, '0.84.1')).toContain('@codemagic/react-native-patch: 0.1.0 -> link:../../client');
+  });
+
+  it('replaces ranges and tags too, in the other two cases as well', () => {
+    expect(demoDeps(plan('^0.1.0', '0.84.1'))['@codemagic/react-native-patch']).toBe('link:../../client');
+    expect(demoDeps(plan('latest', '0.87.1'))['@codemagic/react-native-patch']).toBe('link:../../client');
+  });
+
+  it('leaves a dependency that already points elsewhere', () => {
+    for (const spec of ['workspace:*', 'link:../', 'file:..', 'portal:../client', '../client', './lib', 'github:owner/repo', 'https://example.com/x.tgz']) {
+      expect(isRegistrySpec(spec), spec).toBe(false);
+      const p = plan(spec);
+      expect(demoDeps(p)['@codemagic/react-native-patch'], spec).toBe(spec);
+      expect(p.changes, spec).toEqual([]);
+    }
+  });
+
+  it('uses file: for npm, and touches only the demo app', () => {
+    expect(localSpec('npm', '..')).toBe('file:..');
+    expect(localSpec('pnpm', '..')).toBe('link:..');
+    const root = planSwap({
+      manifests: [
+        { file: 'package.json', manifest: demo('0.1.0') },
+        { file: 'example/package.json', manifest: { dependencies: { 'react-native': '0.84.1' } } },
+      ],
+      demoFile: 'example/package.json',
+      demoKind: 'bare',
+      target: '0.84.1',
+      registry: registryFor('0.84.1'),
+      library,
+    });
+    expect(root.manifests[0].manifest.dependencies['@codemagic/react-native-patch']).toBe('0.1.0');
+    expect(root.changes).toEqual([]);
+  });
+
+  it('does nothing when the demo app does not name the library', () => {
+    expect(swap('v1.3.21', '0.84.1').changes).toEqual([]);
+  });
+});
+

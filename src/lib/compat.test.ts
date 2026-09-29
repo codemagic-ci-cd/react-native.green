@@ -390,13 +390,13 @@ describe('validation', () => {
     );
   });
 
-  it('rejects unknown keys, a mock flag included, and names them', () => {
+  it('rejects unknown keys at any level and names them', () => {
     const made = oneCellFile();
     made.cell.buildURL = 'https://codemagic.io/app/1';
     rejects(made, /\["0\.81"\]\.buildURL: is not a known field/);
-    const mock = oneCellFile();
-    mock.file.mock = true;
-    rejects(mock, /mock: is not a known field/);
+    const top = oneCellFile();
+    top.file.draft = true;
+    rejects(top, /draft: is not a known field/);
   });
 
   it('rejects another schema version, line keys with leading zeros, and inexact tested versions', () => {
@@ -419,7 +419,6 @@ describe('validation', () => {
       ['2.1', '2.1.3', 0],
       ['2.0', '2.0.0', 0],
     ]);
-    expect(pkg).not.toHaveProperty('mock');
   });
 });
 
