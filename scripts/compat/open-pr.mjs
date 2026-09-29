@@ -10,8 +10,7 @@
 //
 //   node --experimental-strip-types scripts/compat/open-pr.mjs
 //
-// Environment: GITHUB_TOKEN (group default); the COMPAT_* inputs; COMPAT_REPOSITORY (owner/name, set
-// in codemagic.yaml), else CM_REPO_SLUG, else the origin remote; COMPAT_BRANCH / CM_BRANCH (default
+// Environment: GITHUB_TOKEN (group default); the COMPAT_* inputs; COMPAT_BRANCH / CM_BRANCH (default
 // main); CM_PROJECT_ID and CM_BUILD_ID for the build link; COMPAT_REMOTE_URL to push somewhere other
 // than github.com (local trials).
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -53,12 +52,9 @@ const buildUrl = env.CM_PROJECT_ID && env.CM_BUILD_ID ? buildUrlFor(env.CM_PROJE
 // ---- Where to send it ----
 const gitTools = tokenGit(env);
 const { run: git, out: gitOut, all: gitAll } = gitTools;
-const target = await pushTarget(env);
-if (target.error) fail(target.error);
-// The name is used as given, for every API call and for the push.
-const { fullName, remote } = target;
+const { fullName, remote } = pushTarget(env);
 const api = client({ token: env.GITHUB_TOKEN });
-say(`Sending the result to ${fullName} (from ${target.source}).`);
+say(`Sending the result to ${fullName}.`);
 
 const base = env.COMPAT_BRANCH || env.CM_BRANCH || 'main';
 if ((await capture('git', ['check-ref-format', '--branch', base])).code !== 0) fail('The base branch name is not a valid branch name.');

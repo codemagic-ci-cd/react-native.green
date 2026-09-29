@@ -169,10 +169,8 @@ description lists them, written again from the data each time.
 - A result is only written over an older one: a cell the base branch already has with a newer result
   is left alone.
 
-**Which repository.** The pull request goes to `COMPAT_REPOSITORY`, set in `codemagic.yaml` to
-`codemagic-ci-cd/react-native.green`. Without it the step takes the repository Codemagic builds from
-(`CM_REPO_SLUG`), then the clone's `origin` remote. The name is used as given; nothing looks up a new
-name after a rename, so **a fork or a rename changes `COMPAT_REPOSITORY` in `codemagic.yaml`**.
+**Which repository.** The pull request always goes to `codemagic-ci-cd/reactnative.green`, fixed as
+`REPOSITORY` in `scripts/compat/lib/github.mjs`. A fork or a rename changes it there.
 
 **When the push fails.** Before preparing the commit, the step checks with git that the token may
 write: a dry run of pushing the base commit to the package's branch, which reaches the repository's

@@ -14,16 +14,11 @@ export class GitHubError extends Error {
   }
 }
 
+/** The one repository every result pull request goes to. */
+export const REPOSITORY = 'codemagic-ci-cd/reactnative.green';
+
 /** `owner/name`, as GitHub spells a repository. */
 export const isRepoSlug = (value) => typeof value === 'string' && /^[\w.-]+\/[\w.-]+$/.test(value) && !value.split('/').includes('..');
-
-/**
- * The repository's `owner/name` from a git remote URL (https or ssh form on github.com), or null.
- */
-export function slugFromRemoteUrl(url) {
-  const match = /^(?:https:\/\/github\.com\/|git@github\.com:|ssh:\/\/git@github\.com\/)([\w.-]+\/[\w.-]+?)(?:\.git)?\/?$/.exec(url.trim());
-  return match && isRepoSlug(match[1]) ? match[1] : null;
-}
 
 /**
  * @param {{ token: string, fetchImpl?: typeof fetch, wait?: (ms: number) => Promise<void> }} options
@@ -88,24 +83,6 @@ export function client({ token, fetchImpl = fetch, wait = (ms) => new Promise((r
       return call('PATCH', `${repoPath(fullName)}/pulls/${Number(number)}`, { body: { title, body } });
     },
   };
-}
-
-/**
- * The repository the result goes to, `owner/name`: COMPAT_REPOSITORY (set in codemagic.yaml), else
- * the one Codemagic builds from (CM_REPO_SLUG), else the origin remote of this clone.
- * @param {Record<string, string | undefined>} env
- * @param {() => Promise<string | null>} originUrl  the origin remote's URL, asked only when needed
- * @returns {Promise<{ slug: string, source: string } | { error: string }>}
- */
-export async function pickRepository(env, originUrl) {
-  for (const source of ['COMPAT_REPOSITORY', 'CM_REPO_SLUG']) {
-    const value = env[source];
-    if (value) return isRepoSlug(value) ? { slug: value, source } : { error: `${source} is not an owner/name repository name.` };
-  }
-  const url = await originUrl();
-  const slug = url ? slugFromRemoteUrl(url) : null;
-  if (!slug) return { error: 'Could not tell the repository: COMPAT_REPOSITORY and CM_REPO_SLUG are not set and the origin remote is not a github.com repository.' };
-  return { slug, source: 'the origin remote' };
 }
 
 /**

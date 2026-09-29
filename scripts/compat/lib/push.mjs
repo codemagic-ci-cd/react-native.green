@@ -1,13 +1,9 @@
 // Pushing to the repository with GITHUB_TOKEN, shared by check-token.mjs (the workflow's first step)
 // and open-pr.mjs (its last). check-token.mjs runs before `npm ci`, so this module and what it
 // imports use Node's own modules only.
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { classifyPushFailure, credentialArgs, deniedMessage, ISOLATED_GIT_ARGS, ISOLATED_GIT_ENV, redact } from './git.mjs';
-import { pickRepository } from './github.mjs';
+import { REPOSITORY } from './github.mjs';
 import { capture, captureAll, run } from './proc.mjs';
-
-const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
 /**
  * The branch the early write check aims at. Package branches come from branchFor, which never has
@@ -33,18 +29,9 @@ export function tokenGit(env = process.env) {
   };
 }
 
-/**
- * The repository the result goes to (COMPAT_REPOSITORY, else CM_REPO_SLUG, else the origin remote)
- * and the URL to push to (COMPAT_REMOTE_URL, for local trials, else github.com).
- * @returns {Promise<{ fullName: string, source: string, remote: string } | { error: string }>}
- */
-export async function pushTarget(env = process.env) {
-  const picked = await pickRepository(env, async () => {
-    const origin = await capture('git', ['remote', 'get-url', 'origin'], { cwd: REPO_ROOT });
-    return origin.code === 0 ? origin.stdout : null;
-  });
-  if (picked.error) return picked;
-  return { fullName: picked.slug, source: picked.source, remote: env.COMPAT_REMOTE_URL || `https://github.com/${picked.slug}.git` };
+/** The repository the result goes to, and the URL to push to (COMPAT_REMOTE_URL, for local trials, else github.com). */
+export function pushTarget(env = process.env) {
+  return { fullName: REPOSITORY, remote: env.COMPAT_REMOTE_URL || `https://github.com/${REPOSITORY}.git` };
 }
 
 /** A push the remote refused; trying again cannot help. */

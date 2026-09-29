@@ -7,8 +7,8 @@
 // The check is a dry run of pushing an empty commit, made in a temporary folder, to a branch no package
 // uses (WRITE_CHECK_BRANCH). Nothing is created on the remote.
 //
-// Environment: GITHUB_TOKEN; COMPAT_REPOSITORY, else CM_REPO_SLUG, else the origin remote;
-// COMPAT_REMOTE_URL for local trials; COMPAT_RECORD=false (local runs only) skips the check.
+// Environment: GITHUB_TOKEN; COMPAT_REMOTE_URL for local trials; COMPAT_RECORD=false (local runs
+// only) skips the check.
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -25,8 +25,7 @@ if (env.COMPAT_RECORD === 'false') {
 }
 if (!env.GITHUB_TOKEN) fail('GITHUB_TOKEN is not set. Add the variable group `default` to the workflow (see the README, "Credentials").');
 
-const target = await pushTarget(env);
-if (target.error) fail(target.error);
+const target = pushTarget(env);
 
 const git = tokenGit(env);
 const dir = mkdtempSync(join(tmpdir(), 'rn-green-token-'));
@@ -44,4 +43,4 @@ try {
 }
 if (problem instanceof PushDenied) fail(problem.message);
 if (problem) fail(`Could not check the token: ${problem.message}`);
-say(`The token may push to ${target.fullName} (from ${target.source}).`);
+say(`The token may push to ${target.fullName}.`);

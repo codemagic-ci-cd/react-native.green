@@ -14,20 +14,12 @@
 schema = 1
 
 [react-native]
-# Every package is checked against each of these. A version with a prerelease tag is shown as a
-# release candidate.
+# Every package is checked against each of these: the three newest stable minor lines. A version
+# with a prerelease tag is shown as a release candidate.
 versions = [
-  "0.88.0-rc.3",
   "0.87.1",
   "0.86.3",
   "0.85.3",
-  "0.84.1",
-  "0.83.10",
-  "0.82.1",
-  "0.81.6",
-  "0.80.3",
-  "0.79.7",
-  "0.78.3",
 ]
 
 # ---------------------------------------------------------------------------------------------

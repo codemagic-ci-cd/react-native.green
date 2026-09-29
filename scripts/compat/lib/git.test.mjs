@@ -4,8 +4,8 @@ import { classifyPushFailure, deniedMessage, redact } from './git.mjs';
 describe('classifyPushFailure', () => {
   it('reads a refusal from GitHub, with the account it names', () => {
     const github403 = [
-      'remote: Permission to codemagic-ci-cd/react-native.green.git denied to CHOIMINSEOK.',
-      "fatal: unable to access 'https://github.com/codemagic-ci-cd/react-native.green.git/': The requested URL returned error: 403",
+      'remote: Permission to codemagic-ci-cd/reactnative.green.git denied to CHOIMINSEOK.',
+      "fatal: unable to access 'https://github.com/codemagic-ci-cd/reactnative.green.git/': The requested URL returned error: 403",
     ].join('\n');
     expect(classifyPushFailure(github403)).toEqual({ kind: 'denied', account: 'CHOIMINSEOK' });
   });
@@ -40,9 +40,9 @@ describe('classifyPushFailure', () => {
 
 describe('deniedMessage', () => {
   it('names the repository and the account, and lists the causes in order', () => {
-    const message = deniedMessage('codemagic-ci-cd/react-native.green', 'CHOIMINSEOK');
+    const message = deniedMessage('codemagic-ci-cd/reactnative.green', 'CHOIMINSEOK');
     expect(message.split('\n')).toEqual([
-      'GitHub refused to let the token push to codemagic-ci-cd/react-native.green (it reported the account CHOIMINSEOK).',
+      'GitHub refused to let the token push to codemagic-ci-cd/reactnative.green (it reported the account CHOIMINSEOK).',
       'Likely causes, most likely first:',
       "  - the token's resource owner is a personal account, not the organization that owns the repository;",
       '  - the organization has not approved the token yet;',
