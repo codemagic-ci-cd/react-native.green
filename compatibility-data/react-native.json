@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "lines": {
+    "0.78": { "version": "0.78.3", "channel": "stable" },
+    "0.79": { "version": "0.79.7", "channel": "stable" },
+    "0.80": { "version": "0.80.3", "channel": "stable" },
+    "0.81": { "version": "0.81.6", "channel": "stable" },
+    "0.82": { "version": "0.82.1", "channel": "stable" },
+    "0.83": { "version": "0.83.10", "channel": "stable" },
+    "0.84": { "version": "0.84.1", "channel": "stable" },
+    "0.85": { "version": "0.85.3", "channel": "stable" },
+    "0.86": { "version": "0.86.3", "channel": "stable" },
+    "0.87": { "version": "0.87.1", "channel": "stable" },
+    "0.88": { "version": "0.88.0-rc.3", "channel": "rc" }
+  }
+}

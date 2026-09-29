@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "mock": true,
+  "package": {
+    "name": "react-native-screenshot-aware",
+    "repository": "https://github.com/huextrat/react-native-screenshot-aware",
+    "description": "React Native module for real-time screenshot detection on Android and iOS",
+    "license": "MIT"
+  },
+  "lines": {
+    "2.1": {
+      "version": "2.1.3",
+      "results": {
+        "0.78": {
+          "status": "incompatible",
+          "tested": { "library": "2.1.3", "reactNative": "0.78.3" },
+          "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "passed" },
+          "testedAt": "2026-09-06T02:14:09Z"
+        },
+        "0.79": {
+          "status": "incompatible",
+          "tested": { "library": "2.1.3", "reactNative": "0.79.7" },
+          "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "passed" },
+          "testedAt": "2026-09-06T02:14:09Z"
+        },
+        "0.80": {
+          "status": "incompatible",
+          "tested": { "library": "2.1.3", "reactNative": "0.80.3" },
+          "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "passed" },
+          "testedAt": "2026-09-06T02:14:09Z"
+        },
+        "0.81": {
+          "status": "incompatible",
+          "tested": { "library": "2.1.3", "reactNative": "0.81.6" },
+          "checks": { "buildIos": "failed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-09-06T02:14:09Z"
+        },
+        "0.82": {
+          "status": "incompatible",
+          "tested": { "library": "2.1.3", "reactNative": "0.82.1" },
+          "checks": { "buildIos": "failed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-09-06T02:14:09Z"
+        },
+        "0.83": {
+          "status": "compatible",
+          "tested": { "library": "2.1.3", "reactNative": "0.83.10" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-09-06T02:14:09Z"
+        },
+        "0.84": {
+          "status": "compatible",
+          "tested": { "library": "2.1.3", "reactNative": "0.84.1" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-09-06T02:14:09Z"
+        },
+        "0.85": {
+          "status": "compatible",
+          "tested": { "library": "2.1.3", "reactNative": "0.85.3" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-09-06T02:14:09Z"
+        },
+        "0.86": {
+          "status": "compatible",
+          "tested": { "library": "2.1.3", "reactNative": "0.86.3" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-09-06T02:14:09Z"
+        },
+        "0.87": {
+          "status": "compatible",
+          "tested": { "library": "2.1.3", "reactNative": "0.87.1" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-09-06T02:14:09Z"
+        },
+        "0.88": {
+          "status": "compatible",
+          "tested": { "library": "2.1.3", "reactNative": "0.88.0-rc.3" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-09-06T02:14:09Z"
+        }
+      }
+    },
+    "2.0": {
+      "version": "2.0.0",
+      "results": {
+        "0.78": {
+          "status": "incompatible",
+          "tested": { "library": "2.0.0", "reactNative": "0.78.3" },
+          "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.79": {
+          "status": "incompatible",
+          "tested": { "library": "2.0.0", "reactNative": "0.79.7" },
+          "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.80": {
+          "status": "incompatible",
+          "tested": { "library": "2.0.0", "reactNative": "0.80.3" },
+          "checks": { "buildIos": "failed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.81": {
+          "status": "compatible",
+          "tested": { "library": "2.0.0", "reactNative": "0.81.6" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.82": {
+          "status": "compatible",
+          "tested": { "library": "2.0.0", "reactNative": "0.82.1" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.83": {
+          "status": "compatible",
+          "tested": { "library": "2.0.0", "reactNative": "0.83.10" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.84": {
+          "status": "compatible",
+          "tested": { "library": "2.0.0", "reactNative": "0.84.1" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.85": {
+          "status": "compatible",
+          "tested": { "library": "2.0.0", "reactNative": "0.85.3" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.86": {
+          "status": "compatible",
+          "tested": { "library": "2.0.0", "reactNative": "0.86.3" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.87": {
+          "status": "incompatible",
+          "tested": { "library": "2.0.0", "reactNative": "0.87.1" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "failed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        }
+      }
+    },
+    "1.3": {
+      "version": "1.3.21",
+      "results": {
+        "0.78": {
+          "status": "compatible",
+          "tested": { "library": "1.3.21", "reactNative": "0.78.3" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.79": {
+          "status": "compatible",
+          "tested": { "library": "1.3.21", "reactNative": "0.79.7" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.80": {
+          "status": "compatible",
+          "tested": { "library": "1.3.21", "reactNative": "0.80.3" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.81": {
+          "status": "compatible",
+          "tested": { "library": "1.3.21", "reactNative": "0.81.6" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.82": {
+          "status": "compatible",
+          "tested": { "library": "1.3.21", "reactNative": "0.82.1" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.83": {
+          "status": "compatible",
+          "tested": { "library": "1.3.21", "reactNative": "0.83.10" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.84": {
+          "status": "compatible",
+          "tested": { "library": "1.3.21", "reactNative": "0.84.1" },
+          "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.85": {
+          "status": "incompatible",
+          "tested": { "library": "1.3.21", "reactNative": "0.85.3" },
+          "checks": { "buildIos": "passed", "buildAndroid": "failed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.86": {
+          "status": "incompatible",
+          "tested": { "library": "1.3.21", "reactNative": "0.86.3" },
+          "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        },
+        "0.87": {
+          "status": "incompatible",
+          "tested": { "library": "1.3.21", "reactNative": "0.87.1" },
+          "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "passed" },
+          "testedAt": "2026-08-27T09:30:00Z"
+        }
+      }
+    }
+  }
+}
