@@ -29,6 +29,48 @@ export function credentialArgs(env) {
   ];
 }
 
+/**
+ * Why a push failed, from git's output:
+ * - `moved`: the branch changed on the remote since it was read (the lease no longer matches, or a
+ *   non-fast-forward). Starting again from the new tip is the answer.
+ * - `denied`: the remote refused the token (401 or 403, permission denied, authentication failed,
+ *   repository not found). Trying again cannot help. `account` is the account GitHub named, if any.
+ * - `other`: anything else, such as a branch protection rule; git's own message says what.
+ * @returns {{ kind: 'moved' | 'denied' | 'other', account?: string }}
+ */
+export function classifyPushFailure(output) {
+  const account = /Permission to \S+ denied to ([A-Za-z0-9-]+)/i.exec(output)?.[1];
+  if (
+    /Permission to \S+ denied/i.test(output) ||
+    /returned error: 40[13]\b/.test(output) ||
+    /Authentication failed/i.test(output) ||
+    /Invalid username or (password|token)/i.test(output) ||
+    /Repository not found/i.test(output)
+  ) {
+    return { kind: 'denied', ...(account ? { account } : {}) };
+  }
+  if (/\((stale info|fetch first|non-fast-forward)\)/.test(output) || /cannot lock ref .* but expected/.test(output)) return { kind: 'moved' };
+  return { kind: 'other' };
+}
+
+/** The message for a push the remote refused: the repository, the account, and what to check, most likely first. */
+export function deniedMessage(repository, account) {
+  return [
+    `GitHub refused to let the token push to ${repository}${account ? ` (it reported the account ${account})` : ''}.`,
+    'Likely causes, most likely first:',
+    "  - the token's resource owner is a personal account, not the organization that owns the repository;",
+    '  - the organization has not approved the token yet;',
+    "  - the repository is not among the token's selected repositories;",
+    "  - the token's Contents permission is not read and write.",
+    'For a classic token: it lacks the public_repo or repo scope.',
+  ].join('\n');
+}
+
+/** Output with every occurrence of the secret replaced, for printing what git said. */
+export function redact(text, secret) {
+  return secret ? text.split(secret).join('***') : text;
+}
+
 /** The remote to fetch and push: an explicit URL, else github.com for the Codemagic app, else origin. */
 export function remoteFor(env) {
   if (env.COMPAT_REMOTE_URL) return env.COMPAT_REMOTE_URL;

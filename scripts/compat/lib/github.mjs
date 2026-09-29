@@ -73,14 +73,6 @@ export function client({ token, fetchImpl = fetch, wait = (ms) => new Promise((r
   };
 
   return {
-    /** The repository, and whether the token may push to it (null when GitHub does not say). */
-    async getRepo(slug) {
-      const repo = await call('GET', repoPath(slug));
-      if (!isRepoSlug(repo?.full_name)) throw new Error('GitHub answered without a usable full_name');
-      const push = repo.permissions?.push;
-      return { fullName: repo.full_name, canPush: typeof push === 'boolean' ? push : null };
-    },
-
     /** The open pull request from `branch` into `base`, or null. */
     async findOpenPull(fullName, branch, base) {
       const owner = fullName.split('/')[0];
@@ -114,28 +106,6 @@ export async function pickRepository(env, originUrl) {
   const slug = url ? slugFromRemoteUrl(url) : null;
   if (!slug) return { error: 'Could not tell the repository: COMPAT_REPOSITORY and CM_REPO_SLUG are not set and the origin remote is not a github.com repository.' };
   return { slug, source: 'the origin remote' };
-}
-
-const likelyCauses = (name) =>
-  `Likely causes: the repository name is wrong or the repository was renamed (set COMPAT_REPOSITORY in codemagic.yaml); ` +
-  `the organization has not approved the token yet; ${name} is not among the token's selected repositories; ` +
-  "or the token's Contents permission is not read and write.";
-
-/**
- * Checks that the token can push to the repository, with one lookup. The name is used as given for
- * everything else. When GitHub's answer does not say whether the token can push, the check passes:
- * the push itself will tell.
- * @throws with a message that names the repository and what to check
- */
-export async function checkPushAccess(api, slug) {
-  let repo;
-  try {
-    repo = await api.getRepo(slug);
-  } catch (error) {
-    if (error instanceof GitHubError && error.status === 404) throw new Error(`GitHub does not show ${slug} to the token (404). ${likelyCauses(slug)}`);
-    throw new Error(`Could not read ${slug} from GitHub: ${error.message}`);
-  }
-  if (repo.canPush === false) throw new Error(`The token can read ${slug} but not push to it. ${likelyCauses(slug)}`);
 }
 
 /**

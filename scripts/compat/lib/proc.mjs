@@ -68,6 +68,25 @@ export function capture(command, args, { cwd, env = {}, secrets = false } = {}) 
   });
 }
 
+/** Like capture, but collects stdout and stderr together, in the order they arrive, and prints neither. */
+export function captureAll(command, args, { cwd, env = {}, secrets = false } = {}) {
+  return new Promise((resolve) => {
+    const child = spawn(command, args, {
+      cwd,
+      env: secrets ? { ...process.env, ...env } : childEnv(env),
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let output = '';
+    const collect = (chunk) => {
+      output += chunk;
+    };
+    child.stdout.on('data', collect);
+    child.stderr.on('data', collect);
+    child.on('error', (error) => resolve({ code: 1, output: `${output}${command}: ${error.message}\n` }));
+    child.on('close', (code) => resolve({ code: code ?? 1, output }));
+  });
+}
+
 export function fail(message) {
   process.stderr.write(`${message}\n`);
   process.exit(1);

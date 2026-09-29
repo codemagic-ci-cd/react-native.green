@@ -170,11 +170,21 @@ description lists them, written again from the data each time.
 **Which repository.** The pull request goes to `COMPAT_REPOSITORY`, set in `codemagic.yaml` to
 `codemagic-ci-cd/react-native.green`. Without it the step takes the repository Codemagic builds from
 (`CM_REPO_SLUG`), then the clone's `origin` remote. The name is used as given; nothing looks up a new
-name after a rename, so **a fork or a rename changes `COMPAT_REPOSITORY` in `codemagic.yaml`**. Before
-pushing, the step checks once that the token can push to that repository, and otherwise fails naming
-it and the likely causes: a wrong or renamed repository name, a token the organization has not
-approved yet, a repository that is not among the token's selected repositories, or Contents not set
-to read and write.
+name after a rename, so **a fork or a rename changes `COMPAT_REPOSITORY` in `codemagic.yaml`**.
+
+**When the push fails.** Before preparing the commit, the step checks with git that the token may
+write: a dry run of pushing the base commit to the package's branch, which reaches the repository's
+receive-pack and changes nothing. The push itself is then told apart by git's answer:
+
+- The branch moved since it was read (the lease no longer matches): the step starts again from the
+  new tip, up to five times.
+- GitHub refused the token (401 or 403, "Permission … denied", authentication failed, repository not
+  found), at the check or at the push: the step fails at once, naming the repository and the account
+  GitHub reported, with the likely causes: the token's resource owner is a personal account and not
+  the organization; the organization has not approved the token; the repository is not among the
+  token's selected repositories; Contents is not read and write. (For a classic token: it lacks the
+  `public_repo` or `repo` scope.)
+- Anything else, such as a branch rule: the step fails at once with git's own message.
 
 A run whose setup fails (bad inputs, no such tag, the swap, the Node download, the install) leaves no
 result and no pull request.
@@ -188,7 +198,9 @@ repository for later; no workflow runs it.
 ### Credentials
 
 One variable group, `default`, with one variable, `GITHUB_TOKEN`: a fine-grained GitHub token
-for this repository only, with **Contents** and **Pull requests** set to read and write. The last
+for this repository only, with **Contents** and **Pull requests** set to read and write. Its
+**resource owner must be the organization that owns the repository**, not a personal account, and the
+organization must approve it. The last
 step uses it to push the package's branch and to open or update its pull request. Mark the value
 **Secret** and give the token an expiry date.
 
