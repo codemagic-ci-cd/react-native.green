@@ -1,4 +1,7 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { REPO_ROOT } from './config.mjs';
 import { parseCatalog } from './catalog.mjs';
 import { isPackageName, validateCheckInputs } from './inputs.mjs';
 
@@ -48,20 +51,20 @@ describe('validateCheckInputs', () => {
     });
   });
 
-  it('defaults record to true', () => {
+  it('defaults record to true (the workflow never sets it)', () => {
     const result = validateCheckInputs({ ...good, record: undefined }, data);
     expect(result.ok && result.value.record).toBe(true);
   });
 
-  it('with record on, requires an enabled package and both lines in the catalog', () => {
+  it('as in the workflow, requires an enabled package and both lines in the catalog', () => {
     expect(errors({ libraryVersion: '3.0.0' })).toEqual(['library line 3.0 is not in the versions of react-native-screenshot-aware in green-packages.toml']);
     expect(errors({ reactNativeVersion: '0.70.1' })).toEqual(['React Native line 0.70 is not in the [react-native] versions of green-packages.toml']);
     expect(errors({ package: 'draft' })).toEqual([
-      'package draft is disabled in green-packages.toml; start the check with record off to try its settings',
+      'package draft is disabled in green-packages.toml; the workflow does not check it (try its settings in a local run with COMPAT_RECORD=false)',
     ]);
   });
 
-  it('with record off, accepts any exact versions and a disabled package, to try draft settings', () => {
+  it('with COMPAT_RECORD=false in a local run, accepts any exact versions and a disabled package, to try draft settings', () => {
     expect(errors({ record: 'false', libraryVersion: '3.0.0', reactNativeVersion: '0.70.1' })).toEqual([]);
     expect(errors({ record: 'false', package: 'draft' })).toEqual([]);
     // Still exact versions only.
@@ -98,5 +101,16 @@ describe('validateCheckInputs', () => {
 
   it('only accepts true or false for record', () => {
     expect(errors({ record: 'yes' })).toEqual(['record "yes" must be true or false']);
+  });
+});
+
+describe('the workflow', () => {
+  const yaml = readFileSync(join(REPO_ROOT, 'codemagic.yaml'), 'utf8');
+
+  it('has no record input and never sets COMPAT_RECORD, so every run opens or updates the pull request', () => {
+    expect(yaml).not.toMatch(/^\s+record:/m);
+    expect(yaml).not.toContain('COMPAT_RECORD');
+    expect(yaml).not.toContain('inputs.record');
+    expect(yaml).toMatch(/- name: Open a pull request with the result\n\s+script: .*scripts\/compat\/open-pr\.mjs/);
   });
 });

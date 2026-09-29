@@ -32,8 +32,9 @@ const ATTEMPTS = 5;
 const env = process.env;
 const say = (line = '') => process.stdout.write(`${line}\n`);
 
+// COMPAT_RECORD=false exists for local runs only; the workflow has no way to set it.
 if (env.COMPAT_RECORD === 'false') {
-  say('record is off: no pull request is opened and nothing is pushed.');
+  say('COMPAT_RECORD is off: no pull request is opened and nothing is pushed.');
   process.exit(0);
 }
 if (!env.GITHUB_TOKEN) fail('GITHUB_TOKEN is not set. Add the variable group `default` to the workflow (see the README, "Credentials").');
@@ -86,7 +87,7 @@ async function attempt(dir) {
     throw new Error(`could not clone ${base}`);
   }
 
-  // The inputs, checked again against the catalog of the branch the result goes to, with the record rules.
+  // The inputs, checked again against the catalog of the branch the result goes to, with the workflow's rules.
   const catalogText = readFileSync(join(dir, CATALOG_FILE), 'utf8');
   const catalog = parseCatalogText(catalogText, CATALOG_FILE);
   if (!catalog.ok) throw new Error(`${CATALOG_FILE} on ${base} is invalid:\n${catalog.errors.join('\n')}`);

@@ -1,9 +1,10 @@
 // Inputs of a compatibility-check build. Anyone who can start a build chooses these values, so they
 // are checked against fixed patterns and the catalog before anything uses them.
 //
-// With `record` on, the check tests a cell of the catalog: the package must be enabled and both
-// versions must be on lines the catalog lists. With `record` off nothing is recorded, so any exact
-// versions and a disabled package are accepted: that is how draft settings are tried.
+// The workflow always checks a cell of the catalog: the package must be enabled and both versions
+// must be on lines the catalog lists. Local runs can set COMPAT_RECORD=false (`record` here): nothing
+// is sent then, so any exact versions and a disabled package are accepted, which is how draft
+// settings are tried. The workflow has no such input.
 import { CATALOG_FILE, isPackageName } from './catalog.mjs';
 import { isVersion, lineOf, MAX_VERSION_LENGTH } from './semver.mjs';
 
@@ -37,7 +38,7 @@ export function validateCheckInputs(raw, data) {
     if (!entry) errors.push(`package ${name} is not in ${CATALOG_FILE}`);
     else if (!entry.settings) errors.push(`package ${name} has no settings in ${CATALOG_FILE}, so it cannot be checked`);
     else if (record && !entry.enabled) {
-      errors.push(`package ${name} is disabled in ${CATALOG_FILE}; start the check with record off to try its settings`);
+      errors.push(`package ${name} is disabled in ${CATALOG_FILE}; the workflow does not check it (try its settings in a local run with COMPAT_RECORD=false)`);
     }
   }
 

@@ -29,5 +29,5 @@ writeJson(join(outDir(), 'inputs.json'), result.value);
 const v = result.value;
 process.stdout.write(
   `Checking ${v.package} ${v.libraryVersion} on React Native ${v.reactNativeVersion}` +
-    ` (cell ${v.libraryLine} x ${v.reactNativeLine}; ${v.record ? 'will record' : 'record is off'}).\n`,
+    ` (cell ${v.libraryLine} x ${v.reactNativeLine}; ${v.record ? 'the result goes to a pull request' : 'COMPAT_RECORD is off: no pull request'}).\n`,
 );

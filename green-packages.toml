@@ -3,7 +3,8 @@
 #
 #   - compatibility-check tests one pair of library version and React Native version, following the
 #     package's source, setup, test and demo settings below, and sends the result as a pull request.
-#     A person starts it by hand. With `record` on, both versions must be on lines listed here.
+#     A person starts it by hand, for a package that is not disabled and two versions on lines
+#     listed here.
 #
 # Results are not kept here. They are in compatibility-data/<package name>/compatibility.json.
 #
@@ -32,7 +33,7 @@ versions = [
 # ---------------------------------------------------------------------------------------------
 # Packages, in name order. Every package with settings is checked.
 #
-# `enabled = false` on a package keeps it on the site and refuses checks with `record` on, for
+# `enabled = false` on a package keeps it on the site, and the workflow refuses to check it, for
 # example while its settings are being fixed. No package uses it now.
 # ---------------------------------------------------------------------------------------------
 

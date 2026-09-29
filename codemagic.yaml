@@ -17,18 +17,14 @@ workflows:
     max_build_duration: 90
     inputs:
       package:
-        description: npm package name, as listed in green-packages.toml (it needs settings there)
+        description: npm package name, as listed in green-packages.toml (with settings, and not disabled)
         type: string
       library_version:
-        description: Exact library version, for example 2.1.3 (with record on, on a line green-packages.toml lists)
+        description: Exact library version on a line green-packages.toml lists, for example 2.1.3
         type: string
       react_native_version:
-        description: Exact React Native version, for example 0.87.1 or 0.88.0-rc.3 (with record on, on a line green-packages.toml lists)
+        description: Exact React Native version on a line green-packages.toml lists, for example 0.87.1 or 0.88.0-rc.3
         type: string
-      record:
-        description: Open a pull request with the result (off runs the checks and opens nothing, and accepts any exact versions and a disabled package, to try draft settings)
-        type: boolean
-        default: true
     environment:
       groups:
         - default
@@ -36,7 +32,6 @@ workflows:
         COMPAT_PACKAGE: ${{ inputs.package }}
         COMPAT_LIBRARY_VERSION: ${{ inputs.library_version }}
         COMPAT_REACT_NATIVE_VERSION: ${{ inputs.react_native_version }}
-        COMPAT_RECORD: ${{ inputs.record }}
       node: 22
       java: 17
       xcode: latest

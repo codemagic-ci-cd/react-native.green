@@ -68,7 +68,7 @@ dir = "example"
   optional.
 - `versions` are the library versions that are checked, one per minor line, newest first by
   convention.
-- `enabled = false` keeps a package on the site and refuses checks for it with `record` on. It is
+- `enabled = false` keeps a package on the site, and the workflow refuses to check it. It is
   optional; the default is `true`.
 - Unknown keys are an error at every level, so a misspelt field fails the build.
 
@@ -133,10 +133,11 @@ Commands are argument lists run without a shell. Every folder must stay inside t
 
 1. Add a `[[package]]` entry to `green-packages.toml` with its `versions` and settings, and
    `enabled = false`. The site lists it straight away; nothing is checked yet.
-2. Start `compatibility-check` by hand with `record` off (see "Starting one check by hand"), for one of
-   its versions on one React Native version. Read the logs and adjust the settings until the setup
-   works. A red build is fine; a setup that fails is not.
-3. Remove `enabled = false`, then start its checks by hand with `record` on, one per cell.
+2. Try the settings in a local run that opens no pull request (see "Running a check locally"), for
+   one of its versions on one React Native version. Read the logs and adjust the settings until the
+   setup works. A red build is fine; a setup that fails is not.
+3. Remove `enabled = false`, then start its checks in Codemagic, one per cell. Each one opens or
+   updates the package's pull request.
 
 ## Compatibility workflow
 
@@ -146,8 +147,9 @@ plain Node, no build step, with the logic in `scripts/compat/lib/` and its tests
 A person starts it by hand, for one cell: one library version on one React Native version. It
 checks the library out at its release tag, points the library's own demo app at that React Native
 version, installs, runs the library's test suite, builds the demo app for Android and for iOS, and
-saves the three outcomes as `result.json`. It follows the package's settings in the catalog. Then,
-with `record` on, it sends the result to this repository as a pull request.
+saves the three outcomes as `result.json`. It follows the package's settings in the catalog. Then it
+sends the result to this repository as a pull request. **Every run opens or updates the package's
+pull request**; there is no run that checks without sending the result.
 
 **One pull request per package.** Results for a package collect on the branch `compat/<package>`
 (`compat/@react-navigation/core`; a character git does not allow in a branch name is written as
@@ -165,7 +167,8 @@ description lists them, written again from the data each time.
 - A result is only written over an older one: a cell the base branch already has with a newer result
   is left alone.
 
-A check whose setup fails leaves no result and opens nothing.
+A run whose setup fails (bad inputs, no such tag, the swap, the Node download, the install) leaves no
+result and no pull request.
 
 ### New releases
 
@@ -208,23 +211,20 @@ this repository or open pull requests with it. What limits the damage:
 1. Add the app to Codemagic.
 2. In the app's settings, create the variable group `default` with `GITHUB_TOKEN` (see
    "Credentials"), and mark the value **Secret**.
-3. Start `compatibility-check` by hand with `record` off (see "Starting one check by hand"). It runs
-   the checks and opens nothing. Read the logs.
-4. Start it again with `record` on. It opens a pull request for the package.
-5. Review the pull request and merge it.
+3. Start `compatibility-check` by hand for one cell (see "Starting one check by hand"). The first
+   build already opens a pull request for the package. Read the build's logs.
+4. Review the pull request and merge it.
 
 There is no schedule, no Codemagic API token and no webhook.
 
 ### Starting one check by hand
 
 In the Codemagic UI, start `compatibility-check` and fill in `package`, `library_version` and
-`react_native_version`, and leave `record` on to get a pull request.
+`react_native_version`. The run opens or updates the package's pull request.
 
 Inputs are checked before anything runs, and again against the base branch's catalog before the
-result is sent. The package must be in the catalog with settings, and the versions must be exact.
-With `record` on, the package must also be enabled and both versions must be on lines the catalog
-lists. With `record` off, any exact versions and a disabled package are accepted, which is how draft
-settings are tried.
+result is sent. The package must be in the catalog with settings and not disabled, the versions must
+be exact, and both must be on lines the catalog lists.
 
 ### How React Native is swapped in
 
@@ -330,8 +330,13 @@ node scripts/compat/validate-inputs.mjs && node scripts/compat/checkout.mjs &&
   node scripts/compat/check.mjs ios && node scripts/compat/compose-result.mjs
 ```
 
+`COMPAT_RECORD` exists only for local runs; the workflow does not have it. It is on by default, with
+the workflow's rules. `COMPAT_RECORD=false`, as above, checks without a pull request: any exact
+versions and a disabled package are accepted, which is how draft settings are tried, and `open-pr.mjs`
+does nothing.
+
 The outcomes are in `$COMPAT_OUT_DIR/result.json` and the logs in `$COMPAT_OUT_DIR/logs/`. With
-`COMPAT_RECORD=true` and `GITHUB_TOKEN` set, the same command line can end with
+`COMPAT_RECORD` on and `GITHUB_TOKEN` set, the same command line can end with
 `node --experimental-strip-types scripts/compat/open-pr.mjs`, which pushes the branch and opens the
 pull request on GitHub like the workflow does. `COMPAT_REMOTE_URL` sends the branch to another git
 remote instead; the pull request calls still go to GitHub.
