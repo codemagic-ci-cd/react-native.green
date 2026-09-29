@@ -56,6 +56,7 @@ if (page) {
   }
 
   function select(selection: PickState): void {
+    current = selection;
     render(selection);
     writeUrl(selection);
     announceSelection(selection);
@@ -72,14 +73,22 @@ if (page) {
     scroller.scrollLeft = targetLeft - covered - (visible - targetBox.width) / 2;
   }
 
-  function revealColumn(rn: string): void {
+  function revealInTable(rn: string): void {
     const pinned = tableScroll?.querySelector('tbody th')?.getBoundingClientRect().width ?? 0;
     centreHorizontally(
       tableScroll,
       tableScroll?.querySelector(`thead [data-pick-rn="${CSS.escape(rn)}"]`),
       pinned,
     );
+  }
+
+  function revealInPicker(rn: string): void {
     centreHorizontally(picker, picker?.querySelector(`[data-pick-rn="${CSS.escape(rn)}"]`));
+  }
+
+  function revealColumn(rn: string): void {
+    revealInTable(rn);
+    revealInPicker(rn);
   }
 
   function initialSelection(): PickState {
@@ -113,8 +122,32 @@ if (page) {
   for (const button of [...pickers, ...cells]) button.disabled = false;
 
   const initial = initialSelection();
+  let current = initial;
   render(initial);
   revealColumn(initial.rn);
+
+  // A window narrowed after loading makes a table or the picker overflow for the first time; bring
+  // the selected column into view then. Once either has been scrolled, by us or by the reader, it
+  // stays where it is.
+  for (const [scroller, reveal] of [
+    [tableScroll, revealInTable],
+    [picker, revealInPicker],
+  ] as const) {
+    if (!scroller) continue;
+    let settled = false;
+    scroller.addEventListener(
+      'scroll',
+      () => {
+        if (scroller.scrollLeft > 0) settled = true;
+      },
+      { passive: true },
+    );
+    new ResizeObserver(() => {
+      if (settled || scroller.scrollWidth <= scroller.clientWidth) return;
+      settled = true;
+      reveal(current.rn);
+    }).observe(scroller);
+  }
 
   // Replace parameters that were ignored (e.g. ?rn=9.99) with the selection actually shown.
   const params = new URLSearchParams(window.location.search);

@@ -1,0 +1,379 @@
+# The rn.green catalog: which packages are covered, which versions are checked, and how each
+# package is tested and built. The site lists what is here, and the Codemagic workflows run from it:
+#
+#   - watch-releases compares this file with npm. A release that is not listed here is a new target:
+#     it is added to `versions`, and a compatibility-check build is started for every pair of library
+#     version and React Native version that has no result yet.
+#   - compatibility-check tests one pair, following the package's source, setup, test and demo
+#     settings below.
+#
+# Results are not kept here. They are in compatibility-data/<package name>/compatibility.json.
+#
+# Patch releases are folded into minor lines, so `versions` holds one version per line: its newest
+# patch. watch-releases changes only the `versions` arrays and leaves everything else, comments
+# included, as written. The README describes every field.
+
+schema = 1
+
+[react-native]
+# Every package is checked against each of these. A version with a prerelease tag is shown as a
+# release candidate.
+versions = [
+  "0.88.0-rc.3",
+  "0.87.1",
+  "0.86.3",
+  "0.85.3",
+  "0.84.1",
+  "0.83.10",
+  "0.82.1",
+  "0.81.6",
+  "0.80.3",
+  "0.79.7",
+  "0.78.3",
+]
+
+# ---------------------------------------------------------------------------------------------
+# Packages, in name order. Every package with settings is checked.
+#
+# `enabled = false` on a package keeps it on the site and stops watch-releases from starting checks
+# for it, for example while its settings are being fixed. No package uses it now.
+# ---------------------------------------------------------------------------------------------
+
+[[package]]
+name = "@codemagic/react-native-patch"
+repository = "https://github.com/codemagic-ci-cd/codemagic-patch"
+description = "React Native client SDK for Codemagic Patch — over-the-air JavaScript & asset updates for React Native and Expo apps."
+license = "Apache-2.0"
+versions = ["0.5.0", "0.4.0", "0.3.0"]
+
+[package.source]
+tag = "@codemagic/react-native-patch@{version}"
+dir = "client"
+
+[package.setup]
+# The demo app is not a workspace of the repository, so it installs separately.
+install = [".", "examples/on-device-demo"]
+prepare = [{ dir = "client", run = ["yarn", "build"] }]
+
+[package.test]
+# The tests (client/test/) are not in the public repository.
+run = "none"
+
+[package.demo]
+# At every tag this app names version 0.1.0 from npm. The check points it at the checked-out
+# client/ instead, so that the tagged code is what gets built.
+dir = "examples/on-device-demo"
+
+[[package]]
+name = "@react-navigation/bottom-tabs"
+repository = "https://github.com/react-navigation/react-navigation"
+description = "Bottom tab navigator following iOS design guidelines"
+license = "MIT"
+versions = ["7.19.2", "7.18.18", "7.17.2"]
+
+[package.source]
+tag = "@react-navigation/bottom-tabs@{version}"
+dir = "packages/bottom-tabs"
+
+[package.setup]
+# The repository asks for Node 24.13 or newer at its newer tags and Node 22 at its older ones.
+node = "24"
+install = ["."]
+
+[package.test]
+dir = "."
+run = ["yarn", "jest", "packages/bottom-tabs"]
+
+[package.demo]
+# An Expo app shared by every react-navigation package; it has no native folders until prebuild.
+dir = "example"
+
+[[package]]
+name = "@react-navigation/core"
+repository = "https://github.com/react-navigation/react-navigation"
+description = "Core utilities for building navigators"
+license = "MIT"
+versions = ["7.22.1", "7.21.13", "7.20.0"]
+
+[package.source]
+tag = "@react-navigation/core@{version}"
+dir = "packages/core"
+
+[package.setup]
+node = "24"
+install = ["."]
+
+[package.test]
+dir = "."
+run = ["yarn", "jest", "packages/core"]
+
+[package.demo]
+dir = "example"
+
+[[package]]
+name = "@react-navigation/drawer"
+repository = "https://github.com/react-navigation/react-navigation"
+description = "Integration for the drawer component from react-native-drawer-layout"
+license = "MIT"
+versions = ["7.14.2", "7.13.10", "7.12.8"]
+
+[package.source]
+tag = "@react-navigation/drawer@{version}"
+dir = "packages/drawer"
+
+[package.setup]
+node = "24"
+install = ["."]
+
+[package.test]
+dir = "."
+run = ["yarn", "jest", "packages/drawer"]
+
+[package.demo]
+dir = "example"
+
+[[package]]
+name = "@react-navigation/native-stack"
+repository = "https://github.com/react-navigation/react-navigation"
+description = "Native stack navigator using react-native-screens"
+license = "MIT"
+versions = ["7.19.2", "7.18.10", "7.17.10"]
+
+[package.source]
+tag = "@react-navigation/native-stack@{version}"
+dir = "packages/native-stack"
+
+[package.setup]
+node = "24"
+install = ["."]
+
+[package.test]
+dir = "."
+run = ["yarn", "jest", "packages/native-stack"]
+
+[package.demo]
+dir = "example"
+
+[[package]]
+name = "@react-navigation/stack"
+repository = "https://github.com/react-navigation/react-navigation"
+description = "Stack navigator component for iOS and Android with animated transitions and gestures"
+license = "MIT"
+versions = ["7.11.2", "7.10.24", "7.9.3"]
+
+[package.source]
+tag = "@react-navigation/stack@{version}"
+dir = "packages/stack"
+
+[package.setup]
+node = "24"
+install = ["."]
+
+[package.test]
+dir = "."
+run = ["yarn", "jest", "packages/stack"]
+
+[package.demo]
+dir = "example"
+
+[[package]]
+name = "lottie-react-native"
+repository = "https://github.com/lottie-react-native/lottie-react-native"
+description = "React Native bindings for Lottie"
+license = "Apache-2.0"
+versions = ["7.5.0", "7.4.0", "7.3.8"]
+
+[package.source]
+tag = "v{version}"
+dir = "packages/core"
+
+[package.setup]
+install = ["."]
+
+[package.test]
+run = "none"
+
+[package.demo]
+# Built with react-native-test-app: the Xcode workspace is generated by `pod install`.
+dir = "example"
+ios-scheme = "ReactTestApp"
+
+[[package]]
+name = "react-native-bootsplash"
+repository = "https://github.com/zoontek/react-native-bootsplash"
+description = "Display a bootsplash on your app starts. Hide it when you want."
+license = "MIT"
+versions = ["7.3.3", "7.2.0", "7.1.0"]
+
+[package.source]
+tag = "{version}"
+dir = "."
+
+[package.setup]
+# The demo app installs separately; its preinstall script installs and builds the library.
+install = [".", "example"]
+
+[package.test]
+run = "none"
+
+[package.demo]
+dir = "example"
+
+[[package]]
+name = "react-native-gesture-handler"
+repository = "https://github.com/software-mansion/react-native-gesture-handler"
+description = "Declarative API exposing native platform touch and gesture system to React Native"
+license = "MIT"
+versions = ["3.3.0", "3.2.1", "3.1.0"]
+
+[package.source]
+tag = "v{version}"
+dir = "packages/react-native-gesture-handler"
+
+[package.setup]
+node = "24"
+# The root postinstall script builds every workspace.
+install = ["."]
+
+[package.test]
+dir = "."
+run = ["yarn", "workspace", "react-native-gesture-handler", "test"]
+
+[package.demo]
+dir = "apps/basic-example"
+
+[[package]]
+name = "react-native-purchases"
+repository = "https://github.com/revenuecat/react-native-purchases"
+description = "React Native in-app purchases and subscriptions made easy. Supports iOS and Android."
+license = "MIT"
+versions = ["10.10.2", "10.9.1", "10.8.1"]
+
+[package.source]
+tag = "{version}"
+dir = "."
+
+[package.setup]
+install = ["."]
+# The tests read the compiled library from dist/.
+prepare = [{ dir = ".", run = ["yarn", "prepare"] }]
+
+[package.test]
+dir = "."
+run = ["yarn", "test"]
+
+[package.demo]
+dir = "examples/purchaseTesterTypescript"
+
+[[package]]
+name = "react-native-reanimated"
+repository = "https://github.com/software-mansion/react-native-reanimated"
+description = "More powerful alternative to Animated library for React Native."
+license = "MIT"
+versions = ["4.7.0", "4.6.0", "4.5.5"]
+
+[package.source]
+tag = "{version}"
+dir = "packages/react-native-reanimated"
+
+[package.setup]
+node = "24"
+install = ["."]
+prepare = [{ dir = "packages/react-native-reanimated", run = ["yarn", "build"] }]
+
+[package.test]
+dir = "packages/react-native-reanimated"
+run = ["yarn", "test"]
+
+[package.demo]
+dir = "apps/fabric-example"
+ios-scheme = "Debug FabricExample"
+
+[[package]]
+name = "react-native-safe-area-context"
+repository = "https://github.com/AppAndFlow/react-native-safe-area-context"
+description = "A flexible way to handle safe area, also works on Android and web."
+license = "MIT"
+versions = ["5.10.0", "5.9.1", "5.8.1"]
+
+[package.source]
+tag = "v{version}"
+dir = "."
+
+[package.setup]
+install = [".", "example"]
+
+[package.test]
+# Not `yarn test`: that also runs the format checks (clang-format, Gradle spotless).
+dir = "."
+run = ["yarn", "jest"]
+
+[package.demo]
+# Built with react-native-test-app: the Xcode workspace is generated by `pod install`.
+dir = "example"
+ios-scheme = "ReactTestApp"
+
+[[package]]
+name = "react-native-screens"
+repository = "https://github.com/software-mansion/react-native-screens"
+description = "Native navigation primitives for your React Native app."
+license = "MIT"
+versions = ["4.28.0", "4.27.0", "4.26.2"]
+
+[package.source]
+tag = "{version}"
+dir = "."
+
+[package.setup]
+install = [".", "FabricExample"]
+env = { RNS_GAMMA_ENABLED = "1" }
+
+[package.test]
+run = "none"
+
+[package.demo]
+dir = "FabricExample"
+
+[[package]]
+name = "react-native-screenshot-aware"
+repository = "https://github.com/huextrat/react-native-screenshot-aware"
+description = "React Native module for real-time screenshot detection on Android and iOS"
+license = "MIT"
+versions = ["2.1.3", "2.0.0", "1.3.21"]
+
+[package.source]
+tag = "v{version}"
+dir = "."
+
+[package.setup]
+install = ["."]
+prepare = [{ dir = ".", run = ["yarn", "prepare"] }]
+
+[package.test]
+dir = "."
+run = ["yarn", "test"]
+
+[package.demo]
+dir = "example"
+
+[[package]]
+name = "react-native-tab-view"
+repository = "https://github.com/react-navigation/react-navigation"
+description = "Tab view component for React Native"
+license = "MIT"
+versions = ["4.3.2", "4.2.2", "4.1.3"]
+
+[package.source]
+tag = "react-native-tab-view@{version}"
+dir = "packages/react-native-tab-view"
+
+[package.setup]
+node = "24"
+install = ["."]
+
+[package.test]
+dir = "."
+run = ["yarn", "jest", "packages/react-native-tab-view"]
+
+[package.demo]
+dir = "example"

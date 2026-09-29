@@ -1,12 +1,18 @@
-import { assertFolderMatchesName, assertNameIsFree, parsePackageFile, parseReactNativeFile, type Package, type ReactNativeLine } from './compat';
+import { parse as parseToml } from 'smol-toml';
+import catalogText from '../../green-packages.toml?raw';
+import { CATALOG_FILE, parseCatalog } from '../../scripts/compat/lib/catalog.mjs';
+import {
+  DataError,
+  folderOf,
+  packageWithoutResults,
+  parseResultsFile,
+  type Package,
+  type ReactNativeLine,
+} from './compat';
 
-const REACT_NATIVE_FILE = '../../compatibility-data/react-native.json';
+export { RESERVED_NAMES } from '../../scripts/compat/lib/catalog.mjs';
 
-const reactNativeModules = import.meta.glob<unknown>('../../compatibility-data/react-native.json', {
-  eager: true,
-  import: 'default',
-});
-const packageModules = import.meta.glob<unknown>('../../compatibility-data/**/compatibility.json', {
+const resultModules = import.meta.glob<unknown>('../../compatibility-data/**/compatibility.json', {
   eager: true,
   import: 'default',
 });
@@ -18,13 +24,6 @@ export interface SiteData {
   packages: Package[];
 }
 
-/**
- * Top-level outputs of the site itself, which a package page at /<name>/ must not collide with:
- * the files in public/ and the pages in src/pages/ as built. A test compares this list with those
- * folders, so adding a page or a public file without listing it here fails `npm test`.
- */
-export const RESERVED_NAMES: ReadonlySet<string> = new Set(['404.html', 'index.html', 'favicon.svg', 'badge']);
-
 // Glob keys are relative to this file; show them relative to the repository root in errors.
 function displayPath(key: string): string {
   return key.replace(/^(\.\.\/)+/, '');
@@ -32,20 +31,36 @@ function displayPath(key: string): string {
 
 let cached: SiteData | undefined;
 
+/** Every package in green-packages.toml, with the results in compatibility-data/ where there are any. */
 export function loadSiteData(): SiteData {
   if (cached) return cached;
 
-  const reactNative = parseReactNativeFile(reactNativeModules[REACT_NATIVE_FILE], displayPath(REACT_NATIVE_FILE));
+  let raw: unknown;
+  try {
+    raw = parseToml(catalogText);
+  } catch (error) {
+    const line = (error as { line?: number }).line;
+    throw new DataError(line ? `${CATALOG_FILE}:${line}` : CATALOG_FILE, [String((error as Error).message).split('\n')[0] ?? '']);
+  }
+  const catalog = parseCatalog(raw, CATALOG_FILE);
+  if (!catalog.ok) throw new DataError(CATALOG_FILE, catalog.errors);
+  const { reactNative, packages: entries } = catalog.value;
 
-  const packages = Object.entries(packageModules).map(([key, raw]) => {
+  const results = new Map<string, { file: string; raw: unknown }>();
+  for (const [key, value] of Object.entries(resultModules)) {
     const file = displayPath(key);
-    const pkg = parsePackageFile(raw, file, reactNative);
-    assertFolderMatchesName(file, pkg);
-    assertNameIsFree(file, pkg, RESERVED_NAMES);
-    return pkg;
+    const name = folderOf(file);
+    if (!entries.some((entry) => entry.name === name)) {
+      throw new DataError(file, [`"${name}" is not a package in ${CATALOG_FILE}`]);
+    }
+    results.set(name, { file, raw: value });
+  }
+
+  const packages = entries.map((entry) => {
+    const found = results.get(entry.name);
+    return found ? parseResultsFile(found.raw, found.file, entry, reactNative) : packageWithoutResults(entry);
   });
 
-  // Plain code-unit order, so the result does not depend on the build machine's locale.
-  cached = { reactNative, packages: packages.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)) };
+  cached = { reactNative, packages };
   return cached;
 }

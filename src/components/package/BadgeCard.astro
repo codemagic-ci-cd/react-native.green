@@ -1,12 +1,12 @@
 ---
-import { badgeMessage } from '../../lib/badge';
+import type { Badge } from '../../lib/badge';
 
 interface Props {
   name: string;
-  range: string;
+  badge: Badge;
 }
 
-const { name, range } = Astro.props;
+const { name, badge } = Astro.props;
 const badgePath = `/badge/${name}.svg`;
 const badgeUrl = new URL(badgePath, Astro.site).href;
 const pageUrl = new URL(`/${name}/`, Astro.site).href;
@@ -15,8 +15,8 @@ const markdown = `[![rn.green](${badgeUrl})](${pageUrl})`;
 
 <section aria-label="README badge" class="badge-card card" data-copy-scope>
   <h2>README badge</h2>
-  <p>Show the React Native range your latest release is verified on. The badge updates after every run.</p>
-  <img src={badgePath} alt={`rn.green: ${badgeMessage(range)}`} height="24" />
+  <p>Show the React Native range your newest tested release is verified on. The badge updates after every run.</p>
+  <img src={badgePath} alt={`rn.green: ${badge.message}`} height="24" />
   <div class="snippet mono" data-copy-text>{markdown}</div>
   <button type="button" class="btn-quiet" data-copy={markdown} data-copy-label="Copy markdown">Copy markdown</button>
 </section>

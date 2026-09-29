@@ -1,0 +1,31 @@
+{
+  "note": "Shaped like GET /api/v3/teams/{team_id}/builds (list) and GET /api/v3/builds/{build_id} (details) in the v3 OpenAPI spec. No real build existed when these were written.",
+  "list": {
+    "page_size": 100,
+    "cursor": null,
+    "data": [
+      { "id": "b-running", "app_id": "app1", "workflow": { "id": "compatibility-check", "source": "yaml", "name": null }, "status": "building", "index": 9, "artifacts": [], "labels": [], "release_notes": [], "created_at": "2026-09-29T11:00:00Z", "started_at": "2026-09-29T11:01:00Z", "finished_at": null },
+      { "id": "b-new", "app_id": "app1", "workflow": { "id": "compatibility-check", "source": "yaml", "name": null }, "status": "finished", "index": 8, "artifacts": [], "labels": [], "release_notes": [], "created_at": "2026-09-29T09:00:00Z", "started_at": "2026-09-29T09:01:00Z", "finished_at": "2026-09-29T09:40:12.345Z" },
+      { "id": "b-failed-recent", "app_id": "app1", "workflow": { "id": "compatibility-check", "source": "yaml", "name": null }, "status": "failed", "index": 7, "artifacts": [], "labels": [], "release_notes": [], "created_at": "2026-09-28T09:00:00Z", "started_at": "2026-09-28T09:01:00Z", "finished_at": "2026-09-28T09:05:00Z" },
+      { "id": "b-recorded", "app_id": "app1", "workflow": { "id": "compatibility-check", "source": "yaml", "name": null }, "status": "finished", "index": 6, "artifacts": [], "labels": [], "release_notes": [], "created_at": "2026-09-27T09:00:00Z", "started_at": "2026-09-27T09:01:00Z", "finished_at": "2026-09-27T09:40:00Z" },
+      { "id": "b-failed-old", "app_id": "app1", "workflow": { "id": "compatibility-check", "source": "yaml", "name": null }, "status": "timeout", "index": 5, "artifacts": [], "labels": [], "release_notes": [], "created_at": "2026-09-24T09:00:00Z", "started_at": "2026-09-24T09:01:00Z", "finished_at": "2026-09-24T10:31:00Z" },
+      { "id": "b-skipped", "app_id": "app1", "workflow": { "id": "compatibility-check", "source": "yaml", "name": null }, "status": "skipped", "index": 4, "artifacts": [], "labels": [], "release_notes": [], "created_at": "2026-09-27T08:00:00Z", "started_at": null, "finished_at": null }
+    ]
+  },
+  "details": {
+    "b-running": { "id": "b-running", "app_id": "app1", "status": "building", "created_at": "2026-09-29T11:00:00Z", "finished_at": null, "artifacts": [], "build_inputs": { "package": "example", "library_version": "2.1.3", "react_native_version": "0.88.0-rc.3", "record": true } },
+    "b-new": {
+      "id": "b-new",
+      "app_id": "app1",
+      "status": "finished",
+      "created_at": "2026-09-29T09:00:00Z",
+      "finished_at": "2026-09-29T09:40:12.345Z",
+      "build_inputs": { "package": "example", "library_version": "2.1.3", "react_native_version": "0.87.1", "record": true },
+      "artifacts": [
+        { "name": "result.json", "size_in_bytes": 96, "type": "json", "short_lived_download_url": "https://storage.example.invalid/result.json", "version_code": null, "version_name": null }
+      ]
+    },
+    "b-failed-recent": { "id": "b-failed-recent", "app_id": "app1", "status": "failed", "created_at": "2026-09-28T09:00:00Z", "finished_at": "2026-09-28T09:05:00Z", "artifacts": [], "build_inputs": { "package": "example", "library_version": "2.0.0", "react_native_version": "0.87.1", "record": true } },
+    "b-failed-old": { "id": "b-failed-old", "app_id": "app1", "status": "timeout", "created_at": "2026-09-24T09:00:00Z", "finished_at": "2026-09-24T10:31:00Z", "artifacts": [], "build_inputs": { "package": "example", "library_version": "2.0.0", "react_native_version": "0.86.3", "record": true } }
+  }
+}

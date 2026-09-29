@@ -1,5 +1,5 @@
 ---
-import { bestLineFor, type Package, type ReactNativeLine } from '../../lib/compat';
+import { bestLineFor, finderAnswer, type Package, type ReactNativeLine } from '../../lib/compat';
 import { isRc, rnAriaLabel } from '../../lib/view';
 import Icon from '../Icon.astro';
 
@@ -13,17 +13,8 @@ const { pkg, reactNative, selectedRn } = Astro.props;
 
 // One answer per React Native line, rendered now and toggled with `hidden` in the browser.
 const answers = reactNative.map((rn) => {
-  const best = bestLineFor(pkg, rn.line);
-  const tested = best?.results.get(rn.line)?.tested;
-  return {
-    rn: rn.line,
-    best,
-    text:
-      best && tested
-        ? `Tested ${tested.library} on React Native ${tested.reactNative}. The demo app builds on iOS and Android and the test suite passes.`
-        : `No tested release builds and passes its tests on React Native ${rn.line} yet.`,
-    install: best ? `npm install ${pkg.name}@${best.line}` : '',
-  };
+  const { best, tested, headline, text } = finderAnswer(pkg, rn.line);
+  return { rn: rn.line, best, tested, headline, text, install: best ? `npm install ${pkg.name}@${best.line}` : '' };
 });
 ---
 
@@ -53,9 +44,9 @@ const answers = reactNative.map((rn) => {
     answers.map((answer) => (
       <div class="answer" data-answer={answer.rn} hidden={answer.rn !== selectedRn}>
         <div class="answer-head">
-          <div class="answer-label">Use release</div>
-          <div class:list={['answer-line', { none: !answer.best }]}>
-            {answer.best ? `${answer.best.line}.x` : 'None yet'}
+          {answer.tested && <div class="answer-label">Use release</div>}
+          <div class:list={['answer-line', { none: !answer.best && answer.tested, untested: !answer.tested }]}>
+            {answer.headline}
           </div>
         </div>
         <p class="answer-text">{answer.text}</p>
@@ -182,6 +173,10 @@ const answers = reactNative.map((rn) => {
 
   .answer-line.none {
     color: var(--answer-none);
+  }
+
+  .answer-line.untested {
+    color: var(--muted);
   }
 
   /* Quotes the tested versions, which can be long unbroken strings. */
@@ -341,6 +336,8 @@ const answers = reactNative.map((rn) => {
 
     .answer-head {
       min-width: 0;
+      /* "Not tested yet" is 261px wide at 40px; let it wrap on a 320px screen. */
+      white-space: normal;
     }
 
     .answer-text {

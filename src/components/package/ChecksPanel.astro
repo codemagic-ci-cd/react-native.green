@@ -43,7 +43,7 @@ const panels = pkg.lines.flatMap((line) =>
           {panel.checks.map((check) => (
             <li class="check">
               <span class:list={['check-icon', `outcome-${check.outcome}`]}>
-                <Icon name={OUTCOME_ICON[check.outcome]} size={14} strokeWidth={check.outcome === 'wait' ? 2 : 2.4} />
+                <Icon name={OUTCOME_ICON[check.outcome]} size={14} strokeWidth={check.outcome === 'wait' || check.outcome === 'none' ? 2 : 2.4} />
               </span>
               <span class="check-name">{check.name}</span>
               <span class:list={['check-result', `text-${check.outcome}`]}>{OUTCOME_LABEL[check.outcome]}</span>
@@ -153,7 +153,8 @@ const panels = pkg.lines.flatMap((line) =>
     color: var(--fail-icon);
   }
 
-  .outcome-wait {
+  .outcome-wait,
+  .outcome-none {
     background: var(--wait-bg);
     color: var(--wait-icon);
   }
@@ -178,7 +179,8 @@ const panels = pkg.lines.flatMap((line) =>
     color: var(--fail-text);
   }
 
-  .text-wait {
+  .text-wait,
+  .text-none {
     color: var(--wait-text);
   }
 

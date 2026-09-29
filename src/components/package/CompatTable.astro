@@ -20,9 +20,9 @@ const { pkg, reactNative, selectedRn, selectedLine } = Astro.props;
       <span class="mobile-only">All versions</span>
     </h2>
     <div class="legend desktop-only">
-      <div class="legend-item"><span class="swatch swatch-yes"></span><span>Builds and tests pass</span></div>
+      <div class="legend-item"><span class="swatch swatch-yes"></span><span>Everything passes</span></div>
       <div class="legend-item"><span class="swatch swatch-no"></span><span>A build or the tests fail</span></div>
-      <div class="legend-item"><span class="swatch swatch-queued"></span><span>Not tested yet</span></div>
+      <div class="legend-item"><span class="swatch swatch-queued"></span><span>Untested</span></div>
     </div>
   </div>
 
@@ -39,7 +39,16 @@ const { pkg, reactNative, selectedRn, selectedLine } = Astro.props;
         </colgroup>
         <thead>
           <tr>
-            <td class="corner"></td>
+            <th scope="col" rowspan="2" class="corner axis">Release</th>
+            <th scope="colgroup" colspan={reactNative.length} class="axis-top">
+              <span class="axis">
+                <span class="desktop-only">React Native version</span>
+                <span class="mobile-only">React Native</span>
+                <span class="sr-only mobile-only"> version</span>
+              </span>
+            </th>
+          </tr>
+          <tr>
             {
               reactNative.map((rn) => (
                 <th scope="col">
@@ -97,12 +106,12 @@ const { pkg, reactNative, selectedRn, selectedLine } = Astro.props;
   </div>
 
   <div class="legend legend-wrap mobile-only">
-    <div class="legend-item"><span class="swatch swatch-yes"></span><span>Builds and tests pass</span></div>
+    <div class="legend-item"><span class="swatch swatch-yes"></span><span>Everything passes</span></div>
     <div class="legend-item"><span class="swatch swatch-no"></span><span>A build or the tests fail</span></div>
-    <div class="legend-item"><span class="swatch swatch-queued"></span><span>Not tested yet</span></div>
+    <div class="legend-item"><span class="swatch swatch-queued"></span><span>Untested</span></div>
   </div>
   <p class="note">
-    Yes means the demo app builds on iOS and Android and the library's test suite passes.<span
+    Yes means the demo app builds on iOS and Android and the library's test suite passes; a library without a test suite is judged on its builds.<span
       class="desktop-only"
       data-needs-js> Select a cell to see the checks and the exact versions tested.</span
     >
@@ -163,6 +172,33 @@ const { pkg, reactNative, selectedRn, selectedLine } = Astro.props;
   th,
   td {
     padding: 0;
+  }
+
+  /* Names the two axes: rows are releases of this package, columns are React Native versions.
+     The second is a sticky label, so it stays in view while the columns scroll. */
+  .axis {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .axis-top {
+    height: 20px;
+    text-align: left;
+  }
+
+  .axis-top .axis {
+    display: inline-block;
+    position: sticky;
+    left: calc(var(--pinned) + 8px);
+  }
+
+  .corner {
+    text-align: left;
+    vertical-align: bottom;
+    padding-bottom: 14px;
   }
 
   .corner,
@@ -275,6 +311,16 @@ const { pkg, reactNative, selectedRn, selectedLine } = Astro.props;
     color: var(--queued-text);
   }
 
+  /* "Untested" is 63px wide, so its icon and gap shrink to fit an 88px cell with room to spare. */
+  .cell-queued {
+    gap: 4px;
+  }
+
+  .cell-queued :global(.cell-icon) {
+    width: 12px;
+    height: 12px;
+  }
+
   .cell.in-col {
     box-shadow: 0 0 0 3px var(--accent);
   }
@@ -385,6 +431,18 @@ const { pkg, reactNative, selectedRn, selectedLine } = Astro.props;
     /* 64px phone cells only fit the label, as in the mobile prototype. */
     .cell :global(.cell-icon) {
       display: none;
+    }
+
+    /* The corner label is as wide as its 60px column, so it gets a smaller size and some air before
+       the columns. The axis label starts beyond the 40px fade that appears once the table scrolls. */
+    .corner {
+      padding-right: 8px;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+
+    .axis-top .axis {
+      left: calc(var(--pinned) + 44px);
     }
 
     .legend-wrap {

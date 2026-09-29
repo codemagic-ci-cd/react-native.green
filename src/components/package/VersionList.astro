@@ -1,6 +1,6 @@
 ---
 import { cellKind, cellResult, type Package, type ReactNativeLine } from '../../lib/compat';
-import { CHECKS, KIND_LABEL, OUTCOME_ICON, OUTCOME_LABEL, outcomeOf, rnTitle } from '../../lib/view';
+import { CHECKS, OUTCOME_ICON, OUTCOME_LABEL, outcomeOf, PILL_LABEL, rnTitle } from '../../lib/view';
 import Icon from '../Icon.astro';
 
 // Phones only: every library line on the selected React Native version, replacing the
@@ -28,7 +28,7 @@ const { pkg, reactNative, selectedRn } = Astro.props;
                 <div class="item-head">
                   <span class="item-label">{line.line}.x</span>
                   <span class="item-version mono truncate" title={`v${line.version}`}>v{line.version}</span>
-                  <span class:list={['status', `status-${kind}`]}>{KIND_LABEL[kind]}</span>
+                  <span class:list={['status', `status-${kind}`]}>{PILL_LABEL[kind]}</span>
                 </div>
                 <ul class="item-checks">
                   {CHECKS.map((check) => {
@@ -36,8 +36,17 @@ const { pkg, reactNative, selectedRn } = Astro.props;
                     return (
                       <li class:list={['item-check', `text-${outcome}`]}>
                         <Icon name={OUTCOME_ICON[outcome]} size={14} />
-                        <span>{check.short}</span>
-                        <span class="sr-only">{OUTCOME_LABEL[outcome]}</span>
+                        {outcome === 'none' ? (
+                          <>
+                            <span aria-hidden="true">No tests</span>
+                            <span class="sr-only">{check.short}: no test suite</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>{check.short}</span>
+                            <span class="sr-only">{OUTCOME_LABEL[outcome]}</span>
+                          </>
+                        )}
                       </li>
                     );
                   })}
@@ -152,7 +161,8 @@ const { pkg, reactNative, selectedRn } = Astro.props;
     color: var(--fail-text);
   }
 
-  .text-wait {
+  .text-wait,
+  .text-none {
     color: var(--wait-text);
   }
 </style>

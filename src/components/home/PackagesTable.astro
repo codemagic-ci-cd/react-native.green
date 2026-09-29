@@ -10,7 +10,7 @@ interface Props {
 
 const { packages, reactNative } = Astro.props;
 
-const CELL_LABEL = { no: 'No', untested: 'Queued' } as const;
+const CELL_LABEL = { no: 'No', untested: 'Untested' } as const;
 ---
 
 <div class="packages-card card">
@@ -24,7 +24,17 @@ const CELL_LABEL = { no: 'No', untested: 'Queued' } as const;
       </colgroup>
       <thead>
         <tr>
-          <th scope="col" class="package-head">Package</th>
+          <th scope="col" rowspan="2" class="package-head">
+            <span class="corner-axis mobile-only" aria-hidden="true">React Native &rarr;</span>Package
+          </th>
+          <th scope="colgroup" colspan={reactNative.length} class="axis-top">
+            <span class="axis">
+              <span class="desktop-only">React Native version</span>
+              <span class="sr-only mobile-only">React Native version</span>
+            </span>
+          </th>
+        </tr>
+        <tr>
           {
             reactNative.map((rn) => (
               <th scope="col" class="rn-head">
@@ -78,7 +88,7 @@ const CELL_LABEL = { no: 'No', untested: 'Queued' } as const;
     <div class="legend-item"><span class="swatch swatch-yes"></span><span>Latest release works</span></div>
     <div class="legend-item"><span class="swatch swatch-older"></span><span>An older release works</span></div>
     <div class="legend-item"><span class="swatch swatch-no"></span><span>No release works</span></div>
-    <div class="legend-item"><span class="swatch swatch-queued"></span><span>Not tested yet</span></div>
+    <div class="legend-item"><span class="swatch swatch-queued"></span><span>Untested</span></div>
   </div>
 </div>
 
@@ -121,8 +131,34 @@ const CELL_LABEL = { no: 'No', untested: 'Queued' } as const;
     padding: 0;
   }
 
+  /* Names the columns; the label is sticky, so it stays in view while they scroll. */
+  .axis-top {
+    height: 20px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .axis {
+    display: inline-block;
+    position: sticky;
+    left: calc(var(--pinned) + 8px);
+  }
+
+  /* On phones the pinned column leaves no room beside it for the label above, so it moves into
+     the corner, at the top and right, next to the columns it names. */
+  .corner-axis {
+    position: absolute;
+    top: 0;
+    right: 8px;
+  }
+
   .package-head {
     height: 36px;
+    vertical-align: bottom;
     text-align: left;
     font-size: 12px;
     font-weight: 600;

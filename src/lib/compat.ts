@@ -14,24 +14,11 @@ const version = z
   .string()
   .max(64, 'must be at most 64 characters')
   .regex(SEMVER, 'must be a version such as "0.87.1" or "0.88.0-rc.3"');
-const checkResultSchema = z.enum(['passed', 'failed']);
-const notEmpty = (record: object) => Object.keys(record).length > 0;
-
+const buildResultSchema = z.enum(['passed', 'failed']);
+// "none" means the library has no test suite, so its cells are judged on the builds alone.
+const testsResultSchema = z.enum(['passed', 'failed', 'none']);
 // Strict objects throughout, so a misspelt key such as "buildURL" fails the build instead of
 // being dropped.
-const reactNativeFileSchema = z.strictObject({
-  schemaVersion: z.literal(1),
-  lines: z
-    .record(
-      lineKey,
-      z.strictObject({
-        version,
-        channel: z.enum(['stable', 'rc']),
-      }),
-    )
-    .refine(notEmpty, 'must list at least one line'),
-});
-
 const cellResultSchema = z
   .strictObject({
     status: z.enum(['compatible', 'incompatible']),
@@ -40,9 +27,9 @@ const cellResultSchema = z
       reactNative: version,
     }),
     checks: z.strictObject({
-      buildIos: checkResultSchema,
-      buildAndroid: checkResultSchema,
-      tests: checkResultSchema,
+      buildIos: buildResultSchema,
+      buildAndroid: buildResultSchema,
+      tests: testsResultSchema,
     }),
     testedAt: z.iso.datetime(),
     buildUrl: z
@@ -50,8 +37,9 @@ const cellResultSchema = z
       .optional(),
   })
   .superRefine((result, ctx) => {
-    const allPassed = Object.values(result.checks).every((check) => check === 'passed');
-    const expected = allPassed ? 'compatible' : 'incompatible';
+    const { buildIos, buildAndroid, tests } = result.checks;
+    const works = buildIos === 'passed' && buildAndroid === 'passed' && tests !== 'failed';
+    const expected = works ? 'compatible' : 'incompatible';
     if (result.status !== expected) {
       ctx.addIssue({
         code: 'custom',
@@ -61,32 +49,15 @@ const cellResultSchema = z
     }
   });
 
-const packageFileSchema = z.strictObject({
-  schemaVersion: z.literal(1),
-  mock: z.boolean().optional(),
-  package: z.strictObject({
-    name: z
-      .string()
-      .max(214, 'must be at most 214 characters')
-      .regex(PACKAGE_NAME, 'must be a valid npm package name')
-      // "npm install -rf@1.3" would be read as an option, not a package.
-      .refine((name) => !name.startsWith('-'), 'must not start with a hyphen'),
-    repository: z.url({ protocol: /^https$/, error: 'must be an https:// link' }),
-    description: z.string().optional(),
-    license: z.string().optional(),
-  }),
-  lines: z
-    .record(
-      lineKey,
-      z.strictObject({
-        version,
-        results: z.record(lineKey, cellResultSchema),
-      }),
-    )
-    .refine(notEmpty, 'must list at least one line'),
+// compatibility-data/<package>/compatibility.json: results only. Outer keys are library lines,
+// inner keys React Native lines. What is checked, and on which versions, is in green-packages.toml.
+const resultsFileSchema = z.strictObject({
+  schemaVersion: z.literal(2),
+  package: z.string(),
+  results: z.record(lineKey, z.record(lineKey, cellResultSchema)),
 });
 
-export type CheckResult = z.infer<typeof checkResultSchema>;
+export type CheckResult = z.infer<typeof testsResultSchema>;
 export type CellResult = z.infer<typeof cellResultSchema>;
 
 export interface ReactNativeLine {
@@ -106,9 +77,18 @@ export interface Package {
   repository: string;
   description?: string;
   license?: string;
-  mock: boolean;
   /** Newest line first. */
   lines: LibraryLine[];
+}
+
+/** A package as green-packages.toml lists it (see scripts/compat/lib/catalog.mjs). */
+export interface CatalogEntry {
+  name: string;
+  repository: string;
+  description?: string;
+  license?: string;
+  /** Newest line first. */
+  lines: { line: string; version: string }[];
 }
 
 export class DataError extends Error {
@@ -154,82 +134,49 @@ function belongsToLine(version: string, line: string): boolean {
   return version.startsWith(`${line}.`);
 }
 
-/** Returns the React Native lines in ascending order. */
-export function parseReactNativeFile(raw: unknown, file: string): ReactNativeLine[] {
-  const data = parseWith(reactNativeFileSchema, raw, file);
-  const problems: string[] = [];
-  for (const [line, info] of Object.entries(data.lines)) {
-    if (!belongsToLine(info.version, line)) {
-      problems.push(`${formatPath(['lines', line, 'version'])}: "${info.version}" is not a ${line} release`);
-    }
-  }
-  if (problems.length > 0) throw new DataError(file, problems);
-
-  return Object.entries(data.lines)
-    .map(([line, info]) => ({ line, version: info.version, channel: info.channel }))
-    .sort((a, b) => compareLines(a.line, b.line));
+/** "compatibility-data/@scope/name/compatibility.json" -> "@scope/name". */
+export function folderOf(file: string): string {
+  return file.replace(/^compatibility-data\//, '').replace(/\/compatibility\.json$/, '');
 }
 
-/** Validates one compatibility.json against the known React Native lines. */
-export function parsePackageFile(raw: unknown, file: string, rnLines: ReactNativeLine[]): Package {
-  const data = parseWith(packageFileSchema, raw, file);
-  const knownRn = new Set(rnLines.map((rn) => rn.line));
-  const problems: string[] = [];
+/** A package with no results file yet: listed, with nothing tested. */
+export function packageWithoutResults(entry: CatalogEntry): Package {
+  const { lines, ...details } = entry;
+  return { ...details, lines: lines.map(({ line, version }) => ({ line, version, results: new Map() })) };
+}
 
-  for (const [line, info] of Object.entries(data.lines)) {
-    if (!belongsToLine(info.version, line)) {
-      problems.push(`${formatPath(['lines', line, 'version'])}: "${info.version}" is not a ${line} release`);
-    }
-    for (const [rn, result] of Object.entries(info.results)) {
-      const at = ['lines', line, 'results', rn];
-      if (!knownRn.has(rn)) {
-        problems.push(`${formatPath(at)}: React Native ${rn} is not listed in react-native.json`);
-      }
+/**
+ * Validates one results file for a package of the catalog. The file must name that package, and
+ * each result's tested versions must be on its lines. Results on a line the catalog does not list
+ * (either axis) are valid but not shown; the watcher drops them the next time it writes the file.
+ */
+export function parseResultsFile(raw: unknown, file: string, entry: CatalogEntry, rnLines: ReactNativeLine[]): Package {
+  const data = parseWith(resultsFileSchema, raw, file);
+  const problems: string[] = [];
+  if (data.package !== entry.name || folderOf(file) !== entry.name) {
+    problems.push(`package: "${data.package}" must be the package whose folder the file is in, "${folderOf(file)}"`);
+  }
+  for (const [line, row] of Object.entries(data.results)) {
+    for (const [rn, result] of Object.entries(row)) {
+      const at = ['results', line, rn];
       if (!belongsToLine(result.tested.library, line)) {
-        problems.push(
-          `${formatPath([...at, 'tested', 'library'])}: "${result.tested.library}" is not a ${line} release`,
-        );
+        problems.push(`${formatPath([...at, 'tested', 'library'])}: "${result.tested.library}" is not a ${line} release`);
       }
       if (!belongsToLine(result.tested.reactNative, rn)) {
-        problems.push(
-          `${formatPath([...at, 'tested', 'reactNative'])}: "${result.tested.reactNative}" is not a ${rn} release`,
-        );
+        problems.push(`${formatPath([...at, 'tested', 'reactNative'])}: "${result.tested.reactNative}" is not a ${rn} release`);
       }
     }
   }
   if (problems.length > 0) throw new DataError(file, problems);
 
-  const lines = Object.entries(data.lines)
-    .map(([line, info]) => ({ line, version: info.version, results: new Map(Object.entries(info.results)) }))
-    .sort((a, b) => compareLines(b.line, a.line));
-
-  return {
-    ...data.package,
-    mock: data.mock ?? false,
-    lines,
-  };
-}
-
-/**
- * The folder a compatibility.json sits in is its page's route, so it must equal the package name.
- * `file` is repository-relative, e.g. "compatibility-data/@scope/name/compatibility.json".
- */
-/**
- * A package page is written to /<name>/, so a name equal to another top-level output ("404.html",
- * "favicon.svg", "badge", ...) would overwrite it or crash the build. `reserved` is
- * RESERVED_NAMES in load.ts.
- */
-export function assertNameIsFree(file: string, pkg: Package, reserved: ReadonlySet<string>): void {
-  if (reserved.has(pkg.name)) {
-    throw new DataError(file, [`package.name: "${pkg.name}" is taken by a page or file of the site itself`]);
+  const shown = new Set(rnLines.map((rn) => rn.line));
+  const pkg = packageWithoutResults(entry);
+  for (const libraryLine of pkg.lines) {
+    for (const [rn, result] of Object.entries(data.results[libraryLine.line] ?? {})) {
+      if (shown.has(rn)) libraryLine.results.set(rn, result);
+    }
   }
-}
-
-export function assertFolderMatchesName(file: string, pkg: Package): void {
-  const folder = file.replace(/^compatibility-data\//, '').replace(/\/compatibility\.json$/, '');
-  if (folder !== pkg.name) {
-    throw new DataError(file, [`package.name: "${pkg.name}" does not match its folder "${folder}"`]);
-  }
+  return pkg;
 }
 
 export type CellKind = 'yes' | 'no' | 'queued';
@@ -250,6 +197,62 @@ export function bestLineFor(pkg: Package, rn: string): LibraryLine | undefined {
   return pkg.lines.find((l) => l.results.get(rn)?.status === 'compatible');
 }
 
+/** The newest library line with a result on at least one React Native line. */
+export function newestTestedLine(pkg: Package): LibraryLine | undefined {
+  return pkg.lines.find((l) => l.results.size > 0);
+}
+
+export interface FinderAnswer {
+  best: LibraryLine | undefined;
+  /** False when no release has a result on this line. */
+  tested: boolean;
+  /** The big line: "5.10.x", "None yet" or "Not tested yet". */
+  headline: string;
+  text: string;
+}
+
+/**
+ * The answer for one React Native line on a package page. "None yet" is for releases that were
+ * tested and none works; when no release has a result on this line it says so instead.
+ */
+export function finderAnswer(pkg: Package, rn: string): FinderAnswer {
+  const best = bestLineFor(pkg, rn);
+  const tested = best?.results.get(rn)?.tested;
+  if (best && tested) {
+    return {
+      best,
+      tested: true,
+      headline: `${best.line}.x`,
+      text:
+        best.results.get(rn)?.checks.tests === 'none'
+          ? `Tested ${tested.library} on React Native ${tested.reactNative}. The demo app builds on iOS and Android. The library has no test suite.`
+          : `Tested ${tested.library} on React Native ${tested.reactNative}. The demo app builds on iOS and Android and the test suite passes.`,
+    };
+  }
+  if (!pkg.lines.some((l) => l.results.has(rn))) {
+    return { best, tested: false, headline: 'Not tested yet', text: `No release has been tested on React Native ${rn} yet.` };
+  }
+  // Lines newer than the newest one with a result here have not been tried on this version.
+  const newer = pkg.lines.slice(0, pkg.lines.findIndex((l) => l.results.has(rn))).map((l) => `${l.line}.x`);
+  const untriedNote =
+    newer.length === 0
+      ? ''
+      : ` ${newer.length === 1 ? newer[0] : `${newer.slice(0, -1).join(', ')} and ${newer[newer.length - 1]}`} ${
+          newer.length === 1 ? 'has' : 'have'
+        } not been tested on it.`;
+  // Where every result is for a library without a test suite, "passes its tests" would be untrue.
+  const suiteRan = pkg.lines.some((l) => {
+    const tests = l.results.get(rn)?.checks.tests;
+    return tests !== undefined && tests !== 'none';
+  });
+  return {
+    best,
+    tested: true,
+    headline: 'None yet',
+    text: `No tested release builds${suiteRan ? ' and passes its tests' : ''} on React Native ${rn} yet.${untriedNote}`,
+  };
+}
+
 /**
  * The React Native line a package page opens on: the newest stable line the package has any
  * result for, so a freshly added line with no runs yet does not open on "None yet". Falls back
@@ -261,11 +264,12 @@ export function defaultReactNativeLine(rnLines: ReactNativeLine[], pkg: Package)
 }
 
 /**
- * The React Native lines the newest library line is compatible with, as contiguous runs in
- * column order: "0.83 to 0.88" or "0.81 to 0.83, 0.86". Empty when there are none.
+ * The React Native lines the newest tested library line is compatible with, as contiguous runs in
+ * column order: "0.83 to 0.88" or "0.81 to 0.83, 0.86". Empty when there are none. A line with no
+ * results yet is skipped, so a fresh release does not hide the one before it.
  */
 export function verifiedRange(pkg: Package, rnLines: ReactNativeLine[]): string {
-  const newest = pkg.lines[0];
+  const newest = newestTestedLine(pkg);
   if (!newest) return '';
 
   const runs: string[][] = [];

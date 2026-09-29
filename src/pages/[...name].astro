@@ -7,7 +7,8 @@ import PackageIntro from '../components/package/PackageIntro.astro';
 import VersionFinder from '../components/package/VersionFinder.astro';
 import VersionList from '../components/package/VersionList.astro';
 import Base from '../layouts/Base.astro';
-import { bestLineFor, defaultReactNativeLine, verifiedRange, type Package } from '../lib/compat';
+import { badgeFor } from '../lib/badge';
+import { bestLineFor, defaultReactNativeLine, type Package } from '../lib/compat';
 import { loadSiteData } from '../lib/load';
 
 export const getStaticPaths = (() =>
@@ -23,14 +24,13 @@ const { reactNative } = loadSiteData();
 // Validation guarantees at least one React Native line and one library line.
 const selectedRn = (defaultReactNativeLine(reactNative, pkg) ?? reactNative[reactNative.length - 1])!.line;
 const selectedLine = (bestLineFor(pkg, selectedRn) ?? pkg.lines[0])!.line;
-const range = verifiedRange(pkg, reactNative);
+const badge = badgeFor(pkg, reactNative);
 const selection = { pkg, reactNative, selectedRn, selectedLine };
 ---
 
 <Base
   title={`${pkg.name} React Native compatibility | rn.green`}
   description={`Which ${pkg.name} release works on each React Native version, built and tested on Codemagic.`}
-  mock={pkg.mock}
 >
   <main id="main" class="package-page" tabindex="-1" data-package-page>
     <PackageIntro pkg={pkg} />
@@ -39,7 +39,7 @@ const selection = { pkg, reactNative, selectedRn, selectedLine };
     <CompatTable {...selection} />
     <div class="details desktop-only">
       <ChecksPanel {...selection} />
-      <BadgeCard name={pkg.name} range={range} />
+      <BadgeCard name={pkg.name} badge={badge} />
     </div>
     <p class="sr-only" aria-live="polite" data-live></p>
   </main>

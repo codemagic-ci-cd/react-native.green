@@ -1,6 +1,6 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
-import { badgeSvg } from '../../lib/badge';
-import { verifiedRange, type Package } from '../../lib/compat';
+import { badgeFor, badgeSvg } from '../../lib/badge';
+import type { Package } from '../../lib/compat';
 import { loadSiteData } from '../../lib/load';
 
 export const getStaticPaths = (() =>
@@ -8,8 +8,7 @@ export const getStaticPaths = (() =>
 
 export const GET = (({ props }) => {
   const { pkg } = props as { pkg: Package };
-  const range = verifiedRange(pkg, loadSiteData().reactNative);
-  return new Response(badgeSvg(range), {
+  return new Response(badgeSvg(badgeFor(pkg, loadSiteData().reactNative)), {
     headers: { 'Content-Type': 'image/svg+xml; charset=utf-8' },
   });
 }) satisfies APIRoute;

@@ -9,18 +9,15 @@ import '../styles/global.css';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import IconSprite from '../components/IconSprite.astro';
-import MockNotice from '../components/MockNotice.astro';
 
 interface Props {
   title: string;
   description: string;
-  /** Shows the mock data strip under the header. */
-  mock?: boolean;
   /** Off for pages that are not a real address, such as the 404 page. */
   canonical?: boolean;
 }
 
-const { title, description, mock = false, canonical = true } = Astro.props;
+const { title, description, canonical = true } = Astro.props;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
 ---
 
@@ -51,7 +48,6 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
     <a href="#main" class="skip-link">Skip to content</a>
     <IconSprite />
     <Header />
-    {mock && <MockNotice />}
     <slot />
     <Footer />
   </body>

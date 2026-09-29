@@ -23,15 +23,14 @@ const steps = [
   },
   {
     title: 'The tests run',
-    text: "The library's test suite runs on the same version. The build and the tests must both pass to earn a Yes.",
+    text: "The library's test suite runs on the same version. The build and the tests must both pass to earn a Yes. A library with no test suite is judged on its builds.",
   },
 ];
 ---
 
 <Base
   title="rn.green | React Native library compatibility"
-  description="Check whether a React Native library builds and passes its tests on each React Native version."
-  mock={packages.some((pkg) => pkg.mock)}
+  description="Check whether a React Native library builds, and passes its tests if it has any, on each React Native version."
 >
   <main id="main" tabindex="-1">
     <section class="hero">
@@ -39,8 +38,8 @@ const steps = [
         <div class="eyebrow">React Native library compatibility</div>
         <h1>Will it work on your React Native version?</h1>
         <p class="lede">
-          rn.green builds each library's demo app against every React Native release and runs its test suite. A cell
-          turns green only when both pass.
+          rn.green builds each library's demo app against every React Native release and runs its test suite, if it has one. A
+          cell turns green only when everything passes.
         </p>
         <form class="search" role="search" action="/#packages" method="get" data-search>
           <Icon name="search" class="search-icon" />

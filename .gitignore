@@ -6,3 +6,6 @@ dist/
 !.omc/skills/
 
 .omc
+
+# Local runs of the compatibility scripts
+compat-results/

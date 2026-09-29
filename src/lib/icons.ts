@@ -2,11 +2,7 @@
 export const ICONS = {
   check: { viewBox: 16, strokeWidth: 2.2, body: '<path d="M3 8.6l3.1 3.1L13 4.8"></path>' },
   cross: { viewBox: 16, strokeWidth: 2.2, body: '<path d="M4 4l8 8M12 4l-8 8"></path>' },
-  clock: {
-    viewBox: 16,
-    strokeWidth: 1.8,
-    body: '<circle cx="8" cy="8" r="5.8"></circle><path d="M8 4.8V8l2.2 1.4"></path>',
-  },
+  dash: { viewBox: 16, strokeWidth: 2.2, body: '<path d="M4.5 8h7"></path>' },
   external: { viewBox: 14, strokeWidth: 1.8, body: '<path d="M5.5 3H3v8h8V8.5M8 3h3v3M11 3L6.5 7.5"></path>' },
   copy: {
     viewBox: 18,
