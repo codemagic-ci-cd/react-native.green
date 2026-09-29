@@ -281,6 +281,16 @@ the library published at its tag:
    published on npm, not the tagged code. A dependency that is already `workspace:`, `link:`,
    `file:`, `portal:` or a path is left alone. This applies in all three cases, "same version"
    included.
+8. **CocoaPods**, only when the demo app's own way fails. The demo app's own way comes first: with a
+   `Gemfile`, `bundle install` and `bundle exec pod install`, otherwise plain `pod install`. If that
+   fails (typically because the repository pins a Ruby version the build machine does not have, in
+   `.ruby-version`), `pod install` is tried once more with the machine's own Ruby and CocoaPods,
+   without the Gemfile and without the pin. The machine's own setup is looked up from outside the
+   repository, where no pin applies, and called by its real path, so it does not depend on which
+   Ruby version manager the machine uses: the default Ruby if it has CocoaPods, otherwise the first
+   `pod` on `PATH` that works there (such as Homebrew's). The iOS log says which one was used and
+   why the first failed, and `checks/buildIos.json` records it (`"cocoapods": "demo app"`,
+   `"machine"` or `"none"`). If both fail, the iOS build is recorded as failed.
 
 Nothing else in the demo app is touched.
 
