@@ -1,0 +1,79 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BadgeCard from '../components/package/BadgeCard.astro';
+import ChecksPanel from '../components/package/ChecksPanel.astro';
+import CompatTable from '../components/package/CompatTable.astro';
+import PackageIntro from '../components/package/PackageIntro.astro';
+import VersionFinder from '../components/package/VersionFinder.astro';
+import VersionList from '../components/package/VersionList.astro';
+import Base from '../layouts/Base.astro';
+import { bestLineFor, defaultReactNativeLine, verifiedRange, type Package } from '../lib/compat';
+import { loadSiteData } from '../lib/load';
+
+export const getStaticPaths = (() =>
+  loadSiteData().packages.map((pkg) => ({ params: { name: pkg.name }, props: { pkg } }))) satisfies GetStaticPaths;
+
+interface Props {
+  pkg: Package;
+}
+
+const { pkg } = Astro.props;
+const { reactNative } = loadSiteData();
+
+// Validation guarantees at least one React Native line and one library line.
+const selectedRn = (defaultReactNativeLine(reactNative, pkg) ?? reactNative[reactNative.length - 1])!.line;
+const selectedLine = (bestLineFor(pkg, selectedRn) ?? pkg.lines[0])!.line;
+const range = verifiedRange(pkg, reactNative);
+const selection = { pkg, reactNative, selectedRn, selectedLine };
+---
+
+<Base
+  title={`${pkg.name} React Native compatibility | rn.green`}
+  description={`Which ${pkg.name} release works on each React Native version, built and tested on Codemagic.`}
+  mock={pkg.mock}
+>
+  <main id="main" class="package-page" tabindex="-1" data-package-page>
+    <PackageIntro pkg={pkg} />
+    <VersionFinder pkg={pkg} reactNative={reactNative} selectedRn={selectedRn} />
+    <VersionList pkg={pkg} reactNative={reactNative} selectedRn={selectedRn} />
+    <CompatTable {...selection} />
+    <div class="details desktop-only">
+      <ChecksPanel {...selection} />
+      <BadgeCard name={pkg.name} range={range} />
+    </div>
+    <p class="sr-only" aria-live="polite" data-live></p>
+  </main>
+</Base>
+
+<script>
+  import '../scripts/package-page';
+  import '../scripts/copy';
+  import '../scripts/scroll-hint';
+</script>
+
+<style>
+  .package-page {
+    padding: 36px var(--gutter) 88px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px;
+  }
+
+  @media (max-width: 1023px) {
+    .details {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .package-page {
+      padding: 8px var(--gutter) 40px;
+    }
+  }
+</style>

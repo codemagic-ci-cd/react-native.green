@@ -1,0 +1,422 @@
+/* Design tokens. Dark is the default theme; light values come from PackageLight.dc.html. */
+:root {
+  color-scheme: dark;
+
+  --page: #13161d;
+  --surface: transparent; /* header and footer */
+  --card: #1a1f28;
+  --card-border: #2a313f;
+  --card-shadow: none;
+  --rule: #2a313f;
+  --text: #ffffff;
+  --muted: #9da4af;
+  --link: #00ceff;
+  --link-hover: #ff9100;
+  --nav-hover: #ff9100;
+  --focus: #ffffff;
+  --logo: #4cd44c;
+  --rc: #ff9100;
+  --dashed: #454857;
+
+  --accent: #00ceff;
+  --on-accent: #13161d;
+  --ring: #ffffff;
+
+  --btn: #0051ff;
+  --btn-hover: #2032eb;
+  --quiet: #28344d;
+  --quiet-hover: #3a4865;
+  --quiet-text: #ffffff;
+  --quiet-border: transparent;
+
+  --chip-bg: transparent;
+  --chip-border: #2a313f;
+  --pick-bg: #232a3f;
+  --pick-text: #ffffff;
+  --code-bg: #13161d;
+  --code-border: #2a313f;
+  --notice-bg: #1a1f28;
+
+  --yes-bg: #1f7a45;
+  --yes-text: #ffffff;
+  --no-bg: #6b2d3a;
+  --no-text: #ffd9de;
+  --queued-bg: #232a36;
+  --queued-text: #9da4af;
+  --older-bg: #16402b;
+  --older-text: #9be8b9;
+  --older-border: #1f7a45;
+  --swatch-yes: none;
+  --swatch-no: none;
+  --swatch-queued: inset 0 0 0 1px #454857;
+
+  --pass-bg: #1f7a45;
+  --pass-icon: #ffffff;
+  --pass-text: #9be8b9;
+  --fail-bg: #6b2d3a;
+  --fail-icon: #ffd9de;
+  --fail-text: #ffb3bd;
+  --wait-bg: #2a313f;
+  --wait-icon: #9da4af;
+  --wait-text: #9da4af;
+  --status-queued-text: #ffffff;
+
+  --answer-yes: #4cd44c;
+  --answer-none: #ffb3bd;
+  --hover-filter: brightness(1.18);
+
+  --font-sans: 'Metropolis', 'Avenir Next', 'Helvetica Neue', sans-serif;
+  --font-mono: 'Fira Code', ui-monospace, monospace;
+  /* Page side padding: 20px on phones growing to 40px by about 1000px wide, then whatever keeps
+     the content at 1200px (40px at 1280, 120px at 1440). The 100% term is relative to the box it
+     pads, so it only takes effect on full-width boxes; inside narrower ones it goes negative and
+     the clamp() wins. */
+  --gutter: max(clamp(20px, 4vw, 40px), calc((100% - 1200px) / 2));
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --page: #fafbff;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --card-border: #e4ecfc;
+  --card-shadow: 0px 4px 30px 0px rgba(44, 83, 166, 0.08);
+  --rule: #e4ecfc;
+  --text: #06225d;
+  --muted: #3a4865;
+  --link: #0051ff;
+  --link-hover: #0031ea;
+  --nav-hover: #0051ff;
+  --focus: #06225d;
+  --logo: #1f7a45;
+  --rc: #9a5200;
+  --dashed: #d2dbee;
+
+  --accent: #0051ff;
+  --on-accent: #ffffff;
+  --ring: #06225d;
+
+  --quiet: #f5f7fb;
+  --quiet-hover: #e4ecfc;
+  --quiet-text: #06225d;
+  --quiet-border: #d2dbee;
+
+  --chip-bg: #ffffff;
+  --chip-border: #d2dbee;
+  --pick-bg: #eef2fb;
+  --pick-text: #06225d;
+  --code-bg: #f5f7fb;
+  --code-border: #e4ecfc;
+  --notice-bg: #eef2fb;
+
+  --yes-bg: #c9efd6;
+  --yes-text: #0b4f2a;
+  --no-bg: #fad4da;
+  --no-text: #7a1c2e;
+  --queued-bg: #eef1f7;
+  --queued-text: #3a4865;
+  --older-bg: #ffffff;
+  --older-text: #1f7a45;
+  --older-border: #1f7a45;
+  --swatch-yes: inset 0 0 0 1px #1f7a45;
+  --swatch-no: inset 0 0 0 1px #a3283f;
+  --swatch-queued: inset 0 0 0 1px #9da4af;
+
+  --pass-bg: #c9efd6;
+  --pass-icon: #0b4f2a;
+  --pass-text: #0b4f2a;
+  --fail-bg: #fad4da;
+  --fail-icon: #7a1c2e;
+  --fail-text: #7a1c2e;
+  --wait-bg: #eef1f7;
+  --wait-icon: #3a4865;
+  --wait-text: #3a4865;
+  --status-queued-text: #3a4865;
+
+  --answer-yes: #1f7a45;
+  --answer-none: #a3283f;
+  --hover-filter: brightness(0.95);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  background: var(--page);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--page);
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--link-hover);
+}
+
+.on-surface {
+  color: var(--text);
+}
+
+.on-surface:hover {
+  color: var(--nav-hover);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+button {
+  font-family: inherit;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* Shared by every <Icon>; set here once rather than on each of the page's many icons. */
+.icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* One-line labels that hold data, such as versions (up to 64 characters): cut with an ellipsis
+   rather than widen their box. The full text stays in the DOM for screen readers; pair it with a
+   title attribute for pointer users. */
+.truncate {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  box-shadow: var(--card-shadow);
+}
+
+.btn-blue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 10px;
+  color: #ffffff;
+  background: var(--btn);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms linear;
+}
+
+.btn-blue:hover {
+  color: #ffffff;
+  background: var(--btn-hover);
+}
+
+.btn-quiet {
+  height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--quiet-border);
+  border-radius: 10px;
+  color: var(--quiet-text);
+  background: var(--quiet);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 200ms linear;
+}
+
+.btn-quiet:hover {
+  background: var(--quiet-hover);
+}
+
+.rc-tag {
+  padding: 1px 4px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-size: 10px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+/* Legend swatches shared by both tables. */
+.legend {
+  display: flex;
+  gap: 24px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border-radius: 3px;
+}
+
+.swatch-yes {
+  background: var(--yes-bg);
+  box-shadow: var(--swatch-yes);
+}
+
+/* Outlined rather than filled, so "an older release works" differs by shape, not only colour. */
+.swatch-older {
+  background: var(--older-bg);
+  box-shadow: inset 0 0 0 1px var(--older-border);
+}
+
+.swatch-no {
+  background: var(--no-bg);
+  box-shadow: var(--swatch-no);
+}
+
+.swatch-queued {
+  background: var(--queued-bg);
+  box-shadow: var(--swatch-queued);
+}
+
+/* A table that scrolls sideways inside its card. The frame fades the edge that has columns
+   hidden past it (see scripts/scroll-hint.ts); --pinned is the width of the sticky first column,
+   so the left fade starts after it. */
+.scroll-frame {
+  position: relative;
+}
+
+.scroll-frame::before,
+.scroll-frame::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  width: 40px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 150ms linear;
+}
+
+.scroll-frame::before {
+  left: var(--pinned, 0px);
+  background: linear-gradient(to right, var(--card), transparent);
+}
+
+.scroll-frame::after {
+  right: 0;
+  background: linear-gradient(to left, var(--card), transparent);
+}
+
+.scroll-frame.can-scroll-left::before,
+.scroll-frame.can-scroll-right::after {
+  opacity: 1;
+}
+
+/* Visible only while focused, so keyboard users can jump past the header. */
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--btn);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: none;
+  color: #ffffff;
+}
+
+/* The skip link moves focus to <main>; it is a landing point, not a control. */
+main:focus {
+  outline: none;
+}
+
+/* The inline script in Base.astro adds .js to <html>. Without it these controls could not work,
+   so they are hidden; the page still shows the full table and the default selection. */
+html:not(.js) [data-theme-toggle],
+html:not(.js) [data-copy],
+html:not(.js) [data-needs-js] {
+  display: none !important;
+}
+
+@media (max-width: 767px) {
+  .desktop-only {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-only {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}

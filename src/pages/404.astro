@@ -1,0 +1,56 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Page not found | rn.green" description="This page does not exist on rn.green." canonical={false}>
+  <main id="main" class="not-found" tabindex="-1">
+    <div class="eyebrow">404</div>
+    <h1>This page does not exist</h1>
+    <p>The package may not be tracked yet, or the link has a typo.</p>
+    <div class="actions">
+      <a href="/" class="btn-blue">Go to all packages</a>
+    </div>
+  </main>
+</Base>
+
+<style>
+  .not-found {
+    padding: 88px var(--gutter);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--logo);
+  }
+
+  h1 {
+    font-size: 38px;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--text);
+  }
+
+  p {
+    font-size: 16px;
+    color: var(--muted);
+  }
+
+  .actions {
+    margin-top: 8px;
+  }
+
+  @media (max-width: 767px) {
+    .not-found {
+      padding-block: 48px;
+    }
+
+    h1 {
+      font-size: 28px;
+    }
+  }
+</style>

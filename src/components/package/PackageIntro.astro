@@ -1,0 +1,192 @@
+---
+import type { Package } from '../../lib/compat';
+import { npmUrl } from '../../lib/links';
+import Icon from '../Icon.astro';
+
+interface Props {
+  pkg: Package;
+}
+
+const { pkg } = Astro.props;
+const latest = pkg.lines[0];
+---
+
+<div class="intro">
+  <nav aria-label="Breadcrumb" class="breadcrumb desktop-only">
+    <a href="/#packages">Packages</a>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">{pkg.name}</span>
+  </nav>
+  <a href="/#packages" class="back mobile-only"><Icon name="back" /><span>Packages</span></a>
+
+  <div class="title-row">
+    <div class="title">
+      <h1>{pkg.name}</h1>
+      {pkg.description && <p>{pkg.description}</p>}
+    </div>
+    <div class="chips">
+      {
+        latest && (
+          <div class="chip">
+            <span class="chip-label">Latest</span>
+            <span class="mono chip-version truncate" title={latest.version}>{latest.version}</span>
+          </div>
+        )
+      }
+      {pkg.license && <div class="chip">{pkg.license}</div>}
+      <a href={npmUrl(pkg.name)} class="chip on-surface">
+        <span>npm</span>
+        <Icon name="external" class="chip-icon" />
+      </a>
+      <a href={pkg.repository} class="chip on-surface">
+        <span>GitHub</span>
+        <Icon name="external" class="chip-icon" />
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+  .intro {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .title-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 40px;
+  }
+
+  .title {
+    flex-grow: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  h1 {
+    font-size: 38px;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--text);
+    overflow-wrap: anywhere;
+  }
+
+  .title p {
+    font-size: 16px;
+    color: var(--muted);
+  }
+
+  /* Capped so a long "Latest" version truncates inside its chip when the title row stacks. */
+  .chips {
+    max-width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .chip {
+    max-width: 100%;
+    min-width: 0;
+    height: 44px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
+    border-radius: 10px;
+    color: var(--text);
+  }
+
+  a.chip:hover {
+    color: var(--nav-hover);
+  }
+
+  .chip-label {
+    color: var(--muted);
+  }
+
+  /* Normal versions fit easily; a long prerelease is cut so the chip does not crowd the title. */
+  .chip-version {
+    max-width: 20ch;
+    font-size: 13px;
+  }
+
+  @media (max-width: 1099px) {
+    .title-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 20px;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .intro {
+      gap: 8px;
+    }
+
+    .back {
+      align-self: flex-start;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .title-row {
+      gap: 0;
+    }
+
+    .title {
+      gap: 8px;
+    }
+
+    h1 {
+      font-size: 24px;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+
+    .title p {
+      font-size: 15px;
+      line-height: 1.5;
+      text-wrap: pretty;
+    }
+
+    .chips {
+      margin-top: 16px;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .chip {
+      padding: 0 12px;
+      gap: 6px;
+    }
+
+    .chip-version {
+      font-size: 12px;
+    }
+
+    .chip :global(.chip-icon) {
+      display: none;
+    }
+  }
+</style>

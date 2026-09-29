@@ -1,0 +1,351 @@
+---
+import PackagesTable from '../components/home/PackagesTable.astro';
+import Icon from '../components/Icon.astro';
+import Base from '../layouts/Base.astro';
+import { loadSiteData } from '../lib/load';
+
+const { packages, reactNative } = loadSiteData();
+
+// Decorative grid beside the hero: G is green, R is red, fading in from left to right.
+const MOTIF = ['RRRRRGG', 'RRRGGGG', 'RRGGGGR', 'GGGGGRR', 'GGGRRRR'];
+const motif = MOTIF.flatMap((row) =>
+  [...row].map((code, i) => ({ green: code === 'G', opacity: 0.25 + (0.75 * i) / 6 })),
+);
+
+const steps = [
+  {
+    title: 'A release lands',
+    text: 'A new version of a library or of React Native is published. That starts a run for every combination it affects.',
+  },
+  {
+    title: 'The demo app is built',
+    text: "The library's own example app is built for iOS and Android on Codemagic, against that React Native version.",
+  },
+  {
+    title: 'The tests run',
+    text: "The library's test suite runs on the same version. The build and the tests must both pass to earn a Yes.",
+  },
+];
+---
+
+<Base
+  title="rn.green | React Native library compatibility"
+  description="Check whether a React Native library builds and passes its tests on each React Native version."
+  mock={packages.some((pkg) => pkg.mock)}
+>
+  <main id="main" tabindex="-1">
+    <section class="hero">
+      <div class="hero-text">
+        <div class="eyebrow">React Native library compatibility</div>
+        <h1>Will it work on your React Native version?</h1>
+        <p class="lede">
+          rn.green builds each library's demo app against every React Native release and runs its test suite. A cell
+          turns green only when both pass.
+        </p>
+        <form class="search" role="search" action="/#packages" method="get" data-search>
+          <Icon name="search" class="search-icon" />
+          <label for="q" class="sr-only">Search packages</label>
+          <input id="q" name="q" type="search" placeholder="Search packages" autocomplete="off" />
+          <button type="submit" class="btn-blue search-button">Search</button>
+        </form>
+      </div>
+      <div class="motif" aria-hidden="true">
+        {
+          motif.map((m) => (
+            <div class:list={['motif-cell', m.green ? 'motif-green' : 'motif-red']} style={`opacity: ${m.opacity}`} />
+          ))
+        }
+      </div>
+    </section>
+
+    <section id="packages" class="packages" aria-labelledby="packages-title">
+      <div class="section-head">
+        <h2 id="packages-title">Packages</h2>
+        <p>Newest release that works on each React Native version</p>
+      </div>
+      <PackagesTable packages={packages} reactNative={reactNative} />
+    </section>
+
+    <section id="how" class="how" aria-labelledby="how-title">
+      <h2 id="how-title">How a cell turns green</h2>
+      <ol class="steps">
+        {
+          steps.map((step, i) => (
+            <li class="step">
+              <div class="step-number mono">{String(i + 1).padStart(2, '0')}</div>
+              <h3>{step.title}</h3>
+              <p>{step.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="fold-note">Patch releases are folded into their minor line: 2.1.3 counts as 2.1.x, and 0.87.1 as 0.87.</p>
+    </section>
+  </main>
+</Base>
+
+<script>
+  import '../scripts/search';
+  import '../scripts/scroll-hint';
+</script>
+
+<style>
+  .hero {
+    padding: 88px var(--gutter) 72px;
+    display: flex;
+    align-items: center;
+    gap: 80px;
+  }
+
+  .hero-text {
+    flex-grow: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .eyebrow {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--logo);
+  }
+
+  h1 {
+    max-width: 700px;
+    font-size: 60px;
+    line-height: 1.06;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    text-wrap: balance;
+  }
+
+  .lede {
+    max-width: 600px;
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+
+  .search {
+    width: 100%;
+    max-width: 560px;
+    height: 56px;
+    margin-top: 8px;
+    padding: 0 6px 0 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
+    color: var(--muted);
+  }
+
+  .search :global(.search-icon) {
+    flex-shrink: 0;
+  }
+
+  /* The ring goes on the rounded field, not on the bare input inside it. */
+  .search:has(input:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .search input:focus-visible {
+    outline: none;
+  }
+
+  .search input::-webkit-search-cancel-button,
+  .search input::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .search input {
+    flex-grow: 1;
+    min-width: 0;
+    height: 44px;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 16px;
+  }
+
+  .search input::placeholder {
+    color: var(--muted);
+    opacity: 1;
+  }
+
+  .search-button {
+    border-radius: 8px;
+  }
+
+  /* 420px at 1440, narrower on smaller screens so the heading keeps its room. */
+  .motif {
+    width: clamp(300px, 29.2vw, 420px);
+    flex-shrink: 0;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  .motif-cell {
+    height: 44px;
+    border-radius: 4px;
+  }
+
+  .motif-green {
+    background: #1f7a45;
+  }
+
+  .motif-red {
+    background: #6b2d3a;
+  }
+
+  /* Mid-tones in the light theme, so the grid does not outweigh the rest of the page. */
+  :global([data-theme='light']) .motif-green {
+    background: #9ad9b0;
+  }
+
+  :global([data-theme='light']) .motif-red {
+    background: #f3aab5;
+  }
+
+  .packages {
+    padding: 0 var(--gutter);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    scroll-margin-top: 16px;
+  }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+
+  h2 {
+    font-size: 26px;
+    line-height: 1.3;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .section-head h2 {
+    flex-grow: 1;
+  }
+
+  .section-head p {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .how {
+    padding: 88px var(--gutter) 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 48px;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .step-number {
+    font-size: 13px;
+    color: var(--logo);
+  }
+
+  h3 {
+    font-size: 19px;
+    line-height: 1.35;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .step p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+
+  .fold-note {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  @media (max-width: 1023px) {
+    .motif {
+      display: none;
+    }
+
+    h1 {
+      font-size: 48px;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .hero {
+      padding-block: 40px 48px;
+    }
+
+    .hero-text {
+      gap: 20px;
+    }
+
+    h1 {
+      font-size: 36px;
+      line-height: 1.1;
+    }
+
+    .lede {
+      font-size: 16px;
+    }
+
+    .search {
+      padding-left: 14px;
+    }
+
+    .search-button {
+      padding: 0 16px;
+    }
+
+    .section-head {
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    h2 {
+      font-size: 22px;
+    }
+
+    .how {
+      padding-block: 56px 48px;
+    }
+
+    .steps {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 32px;
+    }
+  }
+</style>

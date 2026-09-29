@@ -1,0 +1,63 @@
+---
+import { badgeMessage } from '../../lib/badge';
+
+interface Props {
+  name: string;
+  range: string;
+}
+
+const { name, range } = Astro.props;
+const badgePath = `/badge/${name}.svg`;
+const badgeUrl = new URL(badgePath, Astro.site).href;
+const pageUrl = new URL(`/${name}/`, Astro.site).href;
+const markdown = `[![rn.green](${badgeUrl})](${pageUrl})`;
+---
+
+<section aria-label="README badge" class="badge-card card" data-copy-scope>
+  <h2>README badge</h2>
+  <p>Show the React Native range your latest release is verified on. The badge updates after every run.</p>
+  <img src={badgePath} alt={`rn.green: ${badgeMessage(range)}`} height="24" />
+  <div class="snippet mono" data-copy-text>{markdown}</div>
+  <button type="button" class="btn-quiet" data-copy={markdown} data-copy-label="Copy markdown">Copy markdown</button>
+</section>
+
+<style>
+  .badge-card {
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  h2 {
+    font-size: 19px;
+    line-height: 1.35;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+
+  img {
+    display: block;
+    height: 24px;
+  }
+
+  .snippet {
+    align-self: stretch;
+    padding: 14px 16px;
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+    color: var(--text);
+  }
+</style>

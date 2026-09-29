@@ -1,0 +1,395 @@
+---
+import { cellKind, type Package, type ReactNativeLine } from '../../lib/compat';
+import { isRc, KIND_ICON, KIND_LABEL, rnAriaLabel } from '../../lib/view';
+import Icon from '../Icon.astro';
+
+interface Props {
+  pkg: Package;
+  reactNative: ReactNativeLine[];
+  selectedRn: string;
+  selectedLine: string;
+}
+
+const { pkg, reactNative, selectedRn, selectedLine } = Astro.props;
+---
+
+<section aria-label="Compatibility table" class="table-section card">
+  <div class="table-head">
+    <h2>
+      <span class="desktop-only">Supported React Native versions</span>
+      <span class="mobile-only">All versions</span>
+    </h2>
+    <div class="legend desktop-only">
+      <div class="legend-item"><span class="swatch swatch-yes"></span><span>Builds and tests pass</span></div>
+      <div class="legend-item"><span class="swatch swatch-no"></span><span>A build or the tests fail</span></div>
+      <div class="legend-item"><span class="swatch swatch-queued"></span><span>Not tested yet</span></div>
+    </div>
+  </div>
+
+  <div class="table-box">
+    <div class="scroll-frame" data-scroll-frame>
+    <div class="table-scroll" data-table-scroll>
+      <table style={`--cols: ${reactNative.length}`}>
+        <caption class="sr-only">
+          {`Which ${pkg.name} releases build and pass their tests on each React Native version`}
+        </caption>
+        <colgroup>
+          <col class="col-line" />
+          {reactNative.map(() => <col />)}
+        </colgroup>
+        <thead>
+          <tr>
+            <td class="corner"></td>
+            {
+              reactNative.map((rn) => (
+                <th scope="col">
+                  <button
+                    type="button"
+                    class="head"
+                    disabled
+                    data-pick-rn={rn.line}
+                    aria-pressed={rn.line === selectedRn ? 'true' : 'false'}
+                    aria-label={rnAriaLabel(rn)}
+                  >
+                    <span>{rn.line}</span>
+                    {isRc(rn) && <span class="rc-tag">RC</span>}
+                  </button>
+                </th>
+              ))
+            }
+          </tr>
+        </thead>
+        <tbody>
+          {
+            pkg.lines.map((line) => (
+              <tr>
+                <th scope="row">
+                  <span class="line-label">{line.line}.x</span>
+                  <span class="line-version mono truncate" title={`v${line.version}`}>v{line.version}</span>
+                </th>
+                {reactNative.map((rn) => {
+                  const kind = cellKind(pkg, line.line, rn.line);
+                  const inColumn = rn.line === selectedRn;
+                  return (
+                    <td>
+                      <button
+                        type="button"
+                        class:list={['cell', `cell-${kind}`, { 'in-col': inColumn }]}
+                        disabled
+                        data-pick-rn={rn.line}
+                        data-pick-line={line.line}
+                        aria-pressed={inColumn && line.line === selectedLine ? 'true' : 'false'}
+                        aria-label={`${line.line}.x on React Native ${rn.line}: ${KIND_LABEL[kind]}`}
+                      >
+                        <Icon name={KIND_ICON[kind]} class="cell-icon" />
+                        <span>{KIND_LABEL[kind]}</span>
+                      </button>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+    </div>
+  </div>
+
+  <div class="legend legend-wrap mobile-only">
+    <div class="legend-item"><span class="swatch swatch-yes"></span><span>Builds and tests pass</span></div>
+    <div class="legend-item"><span class="swatch swatch-no"></span><span>A build or the tests fail</span></div>
+    <div class="legend-item"><span class="swatch swatch-queued"></span><span>Not tested yet</span></div>
+  </div>
+  <p class="note">
+    Yes means the demo app builds on iOS and Android and the library's test suite passes.<span
+      class="desktop-only"
+      data-needs-js> Select a cell to see the checks and the exact versions tested.</span
+    >
+  </p>
+</section>
+
+<style>
+  .table-section {
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .table-head {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  h2 {
+    flex-grow: 1;
+    font-size: 24px;
+    line-height: 1.3;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* The 3px border spacing doubles as room for the 3px selection frame, so pull the scroller
+     out by the same amount to keep cells where the prototype puts them. */
+  /* The pinned line column plus its 3px gap; the left scroll fade starts after it. */
+  .scroll-frame {
+    --pinned: 135px;
+  }
+
+  /* Positioned so the visually hidden caption stays inside the scroller instead of widening the
+     page. */
+  .table-scroll {
+    position: relative;
+    margin: -3px;
+    overflow-x: auto;
+  }
+
+  /* From 768px up a cell is never narrower than 88px, which keeps room for its icon; past that
+     the table scrolls inside its card. */
+  table {
+    width: 100%;
+    min-width: calc(132px + var(--cols) * 88px + (var(--cols) + 2) * 3px);
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 3px;
+  }
+
+  .col-line {
+    width: 132px;
+  }
+
+  th,
+  td {
+    padding: 0;
+  }
+
+  .corner,
+  th[scope='row'] {
+    position: sticky;
+    left: 3px;
+    z-index: 1;
+    background: var(--card);
+    box-shadow: -3px 0 0 var(--card);
+  }
+
+  /* Once the table has scrolled, also cover the gap to the right of the pinned column. */
+  .table-scroll:global(.is-scrolled) .corner,
+  .table-scroll:global(.is-scrolled) th[scope='row'] {
+    box-shadow:
+      -3px 0 0 var(--card),
+      3px 0 0 var(--card);
+  }
+
+  th[scope='row'] {
+    height: 64px;
+    text-align: left;
+    font-weight: 400;
+    vertical-align: middle;
+  }
+
+  .line-label {
+    display: block;
+    font-size: 17px;
+    line-height: 1.3;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .line-version {
+    display: block;
+    margin-top: 1px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .head,
+  .cell {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: filter 150ms linear;
+  }
+
+  .head:hover,
+  .cell:hover {
+    filter: var(--hover-filter);
+  }
+
+  /* Disabled until the page script runs, and for good without JavaScript. The colours above already
+     override the browser's disabled styling, so only the pointer and hover change. */
+  .head:disabled,
+  .cell:disabled {
+    cursor: default;
+    filter: none;
+  }
+
+  .head {
+    height: 44px;
+    gap: 5px;
+    font-size: 16px;
+    font-weight: 700;
+    background: transparent;
+    color: var(--text);
+  }
+
+  .head .rc-tag {
+    color: var(--rc);
+  }
+
+  .head[aria-pressed='true'] {
+    background: var(--accent);
+    color: var(--on-accent);
+    box-shadow: 0 0 0 3px var(--accent);
+  }
+
+  .head[aria-pressed='true'] .rc-tag {
+    color: var(--on-accent);
+  }
+
+  .cell {
+    height: 64px;
+    gap: 6px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .cell-yes {
+    background: var(--yes-bg);
+    color: var(--yes-text);
+  }
+
+  .cell-no {
+    background: var(--no-bg);
+    color: var(--no-text);
+  }
+
+  .cell-queued {
+    background: var(--queued-bg);
+    color: var(--queued-text);
+  }
+
+  .cell.in-col {
+    box-shadow: 0 0 0 3px var(--accent);
+  }
+
+  .cell[aria-pressed='true'] {
+    box-shadow:
+      inset 0 0 0 2px var(--ring),
+      0 0 0 3px var(--accent);
+  }
+
+  .note {
+    max-width: 860px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+
+  @media (max-width: 1099px) {
+    .table-head {
+      flex-wrap: wrap;
+      gap: 12px 24px;
+    }
+
+    .legend-item {
+      white-space: nowrap;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .table-section {
+      padding: 0;
+      gap: 12px;
+      background: none;
+      border: 0;
+      box-shadow: none;
+    }
+
+    .table-head {
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    h2 {
+      font-size: 18px;
+      line-height: 1.35;
+    }
+
+    .table-box {
+      padding: 16px 0 16px 16px;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      box-shadow: var(--card-shadow);
+    }
+
+    .table-scroll {
+      margin: -3px 0 -3px -3px;
+      padding-right: 13px;
+      scrollbar-width: none;
+    }
+
+    .table-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    table {
+      width: calc(60px + var(--cols) * 64px + (var(--cols) + 2) * 3px);
+      min-width: 0;
+    }
+
+    .scroll-frame {
+      --pinned: 63px;
+    }
+
+    .col-line {
+      width: 60px;
+    }
+
+    th[scope='row'] {
+      height: 48px;
+    }
+
+    .line-label {
+      font-size: 15px;
+    }
+
+    .line-version {
+      margin-top: 0;
+      font-size: 11px;
+    }
+
+    .head {
+      gap: 4px;
+      font-size: 15px;
+    }
+
+    .head .rc-tag {
+      padding: 1px 3px;
+      font-size: 9px;
+    }
+
+    .cell {
+      height: 48px;
+      font-size: 14px;
+    }
+
+    /* 64px phone cells only fit the label, as in the mobile prototype. */
+    .cell :global(.cell-icon) {
+      display: none;
+    }
+
+    .legend-wrap {
+      flex-wrap: wrap;
+      gap: 8px 20px;
+    }
+  }
+</style>

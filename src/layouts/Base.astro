@@ -1,0 +1,58 @@
+---
+import '@fontsource/metropolis/400.css';
+import '@fontsource/metropolis/500.css';
+import '@fontsource/metropolis/600.css';
+import '@fontsource/metropolis/700.css';
+import '@fontsource/fira-code/400.css';
+import '@fontsource/fira-code/500.css';
+import '../styles/global.css';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import IconSprite from '../components/IconSprite.astro';
+import MockNotice from '../components/MockNotice.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Shows the mock data strip under the header. */
+  mock?: boolean;
+  /** Off for pages that are not a real address, such as the 404 page. */
+  canonical?: boolean;
+}
+
+const { title, description, mock = false, canonical = true } = Astro.props;
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonicalUrl} />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>
+      // Runs before first paint so a stored light theme never flashes dark.
+      (function () {
+        var root = document.documentElement;
+        root.classList.add('js');
+        try {
+          var theme = localStorage.getItem('rn-green-theme');
+          if (theme === 'light' || theme === 'dark') root.dataset.theme = theme;
+        } catch (error) {
+          // Storage is unavailable; keep the default theme.
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <IconSprite />
+    <Header />
+    {mock && <MockNotice />}
+    <slot />
+    <Footer />
+  </body>
+</html>

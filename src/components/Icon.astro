@@ -1,0 +1,24 @@
+---
+// Decorative only: the text next to each icon carries the meaning. The shapes live once per page
+// in IconSprite.astro; stroke and fill come from the .icon rule in global.css.
+import { ICONS, type IconName } from '../lib/icons';
+
+interface Props {
+  name: IconName;
+  size?: number;
+  strokeWidth?: number;
+  class?: string;
+}
+
+const { name, size, strokeWidth, class: className } = Astro.props;
+const icon = ICONS[name];
+const px = size ?? icon.viewBox;
+---
+
+<svg
+  class:list={['icon', className]}
+  width={px}
+  height={px}
+  stroke-width={strokeWidth ?? icon.strokeWidth}
+  aria-hidden="true"><use href={`#icon-${name}`}></use></svg
+>

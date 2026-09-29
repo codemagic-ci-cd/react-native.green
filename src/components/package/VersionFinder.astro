@@ -1,0 +1,365 @@
+---
+import { bestLineFor, type Package, type ReactNativeLine } from '../../lib/compat';
+import { isRc, rnAriaLabel } from '../../lib/view';
+import Icon from '../Icon.astro';
+
+interface Props {
+  pkg: Package;
+  reactNative: ReactNativeLine[];
+  selectedRn: string;
+}
+
+const { pkg, reactNative, selectedRn } = Astro.props;
+
+// One answer per React Native line, rendered now and toggled with `hidden` in the browser.
+const answers = reactNative.map((rn) => {
+  const best = bestLineFor(pkg, rn.line);
+  const tested = best?.results.get(rn.line)?.tested;
+  return {
+    rn: rn.line,
+    best,
+    text:
+      best && tested
+        ? `Tested ${tested.library} on React Native ${tested.reactNative}. The demo app builds on iOS and Android and the test suite passes.`
+        : `No tested release builds and passes its tests on React Native ${rn.line} yet.`,
+    install: best ? `npm install ${pkg.name}@${best.line}` : '',
+  };
+});
+---
+
+<section aria-label="Find your version" class="finder card">
+  <div class="pick-row" data-needs-js>
+    <div class="pick-label" id="picker-label">I'm on React Native</div>
+    <div class="picker" role="group" aria-labelledby="picker-label" data-picker>
+      {
+        reactNative.map((rn) => (
+          <button
+            type="button"
+            class="pick"
+            data-pick-rn={rn.line}
+            data-default-line={(bestLineFor(pkg, rn.line) ?? pkg.lines[0])?.line}
+            aria-pressed={rn.line === selectedRn ? 'true' : 'false'}
+            aria-label={rnAriaLabel(rn)}
+          >
+            <span>{rn.line}</span>
+            {isRc(rn) && <span class="rc-tag">RC</span>}
+          </button>
+        ))
+      }
+    </div>
+  </div>
+  <div class="divider" data-needs-js></div>
+  {
+    answers.map((answer) => (
+      <div class="answer" data-answer={answer.rn} hidden={answer.rn !== selectedRn}>
+        <div class="answer-head">
+          <div class="answer-label">Use release</div>
+          <div class:list={['answer-line', { none: !answer.best }]}>
+            {answer.best ? `${answer.best.line}.x` : 'None yet'}
+          </div>
+        </div>
+        <p class="answer-text">{answer.text}</p>
+        {answer.best && (
+          <div class="command mono" data-copy-scope>
+            <span data-copy-text>{answer.install}</span>
+            <button
+              type="button"
+              class="copy on-surface"
+              data-copy={answer.install}
+              aria-label="Copy install command"
+            >
+              <Icon name="copy" class="copy-idle" />
+              <Icon name="check" size={18} class="copy-done" />
+              <Icon name="cross" size={18} class="copy-failed" />
+            </button>
+          </div>
+        )}
+      </div>
+    ))
+  }
+</section>
+
+<style>
+  .finder {
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .pick-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .pick-label {
+    width: 160px;
+    flex-shrink: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .picker {
+    flex-grow: 1;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .pick {
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--pick-bg);
+    color: var(--pick-text);
+    transition: filter 150ms linear;
+  }
+
+  .pick:hover {
+    filter: var(--hover-filter);
+  }
+
+  .pick .rc-tag {
+    color: var(--rc);
+  }
+
+  .pick[aria-pressed='true'] {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .pick[aria-pressed='true'] .rc-tag {
+    color: var(--on-accent);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--rule);
+  }
+
+  .answer {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+  }
+
+  /* At least as wide as the picker label above it, wider when "None yet" needs it. */
+  .answer-head {
+    min-width: 160px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .answer-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .answer-line {
+    font-size: 40px;
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--answer-yes);
+  }
+
+  .answer-line.none {
+    color: var(--answer-none);
+  }
+
+  /* Quotes the tested versions, which can be long unbroken strings. */
+  .answer-text {
+    flex-grow: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+
+  .command {
+    height: 52px;
+    flex-shrink: 0;
+    padding: 0 4px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 10px;
+    font-size: 13px;
+    white-space: nowrap;
+    color: var(--text);
+  }
+
+  /* Without JavaScript the copy button is hidden, so balance the padding it leaves behind. */
+  :global(html:not(.js)) .command {
+    padding-right: 16px;
+  }
+
+  .copy {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .copy :global(.copy-done),
+  .copy :global(.copy-failed),
+  .copy:global(.is-copied) :global(.copy-idle),
+  .copy:global(.is-failed) :global(.copy-idle) {
+    display: none;
+  }
+
+  .copy:global(.is-copied) :global(.copy-done),
+  .copy:global(.is-failed) :global(.copy-failed) {
+    display: block;
+  }
+
+  .copy:global(.is-failed) {
+    color: var(--fail-text);
+  }
+
+  /* Tablet: eleven chips no longer fit in one row beside the label. */
+  @media (max-width: 1099px) {
+    .pick-row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    /* As many chips per row as fit, stretched to fill it; "0.88 RC" needs about 72px. */
+    .picker {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+    }
+
+    .pick {
+      padding: 0 6px;
+    }
+
+    .answer {
+      flex-wrap: wrap;
+      gap: 16px 40px;
+    }
+
+    .answer-text {
+      flex-basis: 0;
+      min-width: 240px;
+    }
+  }
+
+  /* Small tablets: six equal columns, so eleven or twelve versions make two even rows. */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .picker {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 767px) {
+    .finder {
+      padding: 0;
+      gap: 12px;
+      background: none;
+      border: 0;
+      box-shadow: none;
+    }
+
+    .pick-row {
+      gap: 12px;
+    }
+
+    .pick-label {
+      width: auto;
+    }
+
+    .picker {
+      display: flex;
+      /* Runs to the screen edges, so the row scrolls under the page padding. */
+      margin: 0 calc(-1 * var(--gutter));
+      padding: 3px var(--gutter);
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .picker::-webkit-scrollbar {
+      display: none;
+    }
+
+    .pick {
+      min-width: 64px;
+      flex-shrink: 0;
+      padding: 0 12px;
+    }
+
+    /* The row scrolls, so keep the focus ring inside its 3px padding. */
+    .pick:focus-visible {
+      outline-offset: 1px;
+    }
+
+    .divider {
+      display: none;
+    }
+
+    .answer {
+      margin-top: 4px;
+      padding: 20px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      box-shadow: var(--card-shadow);
+    }
+
+    .answer-head {
+      min-width: 0;
+    }
+
+    .answer-text {
+      min-width: 0;
+      font-size: 14px;
+    }
+
+    .command {
+      height: auto;
+      padding: 4px 4px 4px 14px;
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: normal;
+    }
+
+    .command span {
+      flex-grow: 1;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+  }
+</style>

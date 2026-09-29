@@ -1,0 +1,232 @@
+---
+import { REPO_URL, REQUEST_URL } from '../lib/links';
+import Icon from './Icon.astro';
+import Logo from './Logo.astro';
+
+// DOM order is the tab order. On phones: logo, theme, menu button, then the menu's links. On larger
+// screens the menu button is hidden and the theme toggle inside the menu shows instead, after the
+// links, where it sits visually.
+---
+
+<header class="site-header">
+  <a href="/" class="home on-surface" aria-label="rn.green home"><Logo size="header" /></a>
+  <button type="button" class="icon-button theme-mobile on-surface" data-theme-toggle aria-label="Switch to light theme">
+    <Icon name="sun" class="icon-sun" />
+    <Icon name="moon" class="icon-moon" />
+  </button>
+  <button
+    type="button"
+    class="icon-button menu-toggle on-surface"
+    data-menu-toggle
+    aria-label="Menu"
+    aria-expanded="false"
+    aria-controls="site-menu"
+  >
+    <Icon name="menu" class="icon-open" />
+    <Icon name="close" class="icon-close" />
+  </button>
+  <div id="site-menu" class="menu" data-menu>
+    <nav aria-label="Main" class="nav">
+      <a href="/#packages" class="nav-link on-surface">Packages</a>
+      <a href="/#how" class="nav-link on-surface">How it works</a>
+    </nav>
+    <div class="actions">
+      <a href={REPO_URL} class="nav-link github on-surface">GitHub</a>
+      <a href={REQUEST_URL} class="btn-blue request">Request a package</a>
+    </div>
+    <button
+      type="button"
+      class="icon-button theme-desktop on-surface"
+      data-theme-toggle
+      aria-label="Switch to light theme"
+    >
+      <Icon name="sun" class="icon-sun" />
+      <Icon name="moon" class="icon-moon" />
+    </button>
+  </div>
+</header>
+
+<script>
+  import '../scripts/theme';
+  import '../scripts/menu';
+</script>
+
+<style>
+  .site-header {
+    position: relative;
+    z-index: 10;
+    height: 72px;
+    flex-shrink: 0;
+    padding-inline: var(--gutter);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .home {
+    margin-right: 32px;
+  }
+
+  .menu {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .nav {
+    flex-grow: 1;
+    display: flex;
+    gap: 8px;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .nav-link {
+    height: 44px;
+    line-height: 44px;
+    padding: 0 16px;
+    font-size: 15px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .github {
+    padding: 0 12px;
+  }
+
+  .request {
+    white-space: nowrap;
+  }
+
+  .icon-button {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  /* The icon shows the theme you would switch to. */
+  :global(:root[data-theme='light']) .icon-button :global(.icon-sun),
+  :global(:root:not([data-theme='light'])) .icon-button :global(.icon-moon) {
+    display: none;
+  }
+
+  .theme-mobile,
+  .menu-toggle,
+  .menu-toggle :global(.icon-close) {
+    display: none;
+  }
+
+  @media (max-width: 1023px) {
+    .home {
+      margin-right: 8px;
+    }
+
+    .nav-link {
+      padding: 0 10px;
+    }
+
+    .request {
+      padding: 0 16px;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .site-header {
+      height: 56px;
+      /* The menu button's 44px hit area overhangs its icon, so pull the right edge in by 12px. */
+      padding: 0 calc(var(--gutter) - 12px) 0 var(--gutter);
+      gap: 0;
+    }
+
+    .home {
+      flex-grow: 1;
+      height: 44px;
+      margin-right: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .theme-mobile,
+    .menu-toggle {
+      display: flex;
+    }
+
+    .theme-desktop {
+      display: none;
+    }
+
+    .menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      padding: 8px var(--gutter) 20px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      background: var(--page);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .nav,
+    .actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .nav-link,
+    .github {
+      padding: 0;
+    }
+
+    .request {
+      margin-top: 8px;
+    }
+
+    :global(.js) .menu:not(.is-open) {
+      display: none;
+    }
+
+    .menu-toggle[aria-expanded='true'] :global(.icon-open) {
+      display: none;
+    }
+
+    .menu-toggle[aria-expanded='true'] :global(.icon-close) {
+      display: block;
+    }
+
+    /* Without JavaScript the menu cannot open, so the links sit in the header instead. */
+    :global(html:not(.js)) .site-header {
+      height: auto;
+      flex-wrap: wrap;
+      padding-block: 6px;
+    }
+
+    :global(html:not(.js)) .menu {
+      position: static;
+      flex-basis: 100%;
+      padding: 0 0 8px;
+      border: 0;
+    }
+
+    :global(html:not(.js)) .menu-toggle {
+      display: none;
+    }
+  }
+</style>

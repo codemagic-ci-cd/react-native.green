@@ -1,0 +1,70 @@
+---
+import { CODEMAGIC_URL, REPO_URL } from '../lib/links';
+import Logo from './Logo.astro';
+---
+
+<footer class="site-footer">
+  <div class="brand">
+    <Logo size="footer" />
+    <p>Compatibility data is open and lives in the repository.</p>
+  </div>
+  <div class="links">
+    <a href={REPO_URL} class="footer-link on-surface">GitHub</a>
+    <a href={CODEMAGIC_URL} class="footer-link on-surface">Builds run on Codemagic CI/CD</a>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: auto;
+    min-height: 88px;
+    flex-shrink: 0;
+    padding-inline: var(--gutter);
+    /* One row when it fits; otherwise the links move below the tagline as a group. */
+    padding-block: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 32px;
+    background: var(--surface);
+    border-top: 1px solid var(--rule);
+    font-size: 14px;
+  }
+
+  .brand {
+    flex-grow: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    white-space: nowrap;
+  }
+
+  .links {
+    display: flex;
+    gap: 32px;
+  }
+
+  .footer-link {
+    height: 44px;
+    line-height: 44px;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 767px) {
+    .site-footer {
+      padding: 12px var(--gutter) 20px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .brand {
+      display: none;
+    }
+
+    .links {
+      flex-direction: column;
+      gap: 0;
+    }
+  }
+</style>

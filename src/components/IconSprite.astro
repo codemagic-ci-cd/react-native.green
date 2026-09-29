@@ -1,0 +1,23 @@
+---
+// Every icon once per page as a <symbol>; Icon.astro points at them with <use>. The symbols set
+// no stroke or fill of their own, so each icon inherits currentColor and its stroke width from
+// the <svg> that uses it.
+import { ICONS } from '../lib/icons';
+---
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  {
+    Object.entries(ICONS).map(([name, icon]) => (
+      <symbol id={`icon-${name}`} viewBox={`0 0 ${icon.viewBox} ${icon.viewBox}`} set:html={icon.body} />
+    ))
+  }
+</svg>
+
+<style>
+  .sprite {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+</style>

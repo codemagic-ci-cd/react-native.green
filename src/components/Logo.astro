@@ -1,0 +1,65 @@
+---
+interface Props {
+  /** header: 22px wordmark, footer: 16px. */
+  size: 'header' | 'footer';
+}
+
+const { size } = Astro.props;
+---
+
+<span class:list={['logo', `logo-${size}`]}>
+  <span>rn</span>
+  <span class="logo-mark"></span>
+  <span class="logo-green">green</span>
+</span>
+
+<style>
+  .logo {
+    display: flex;
+    align-items: baseline;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .logo-green {
+    color: var(--logo);
+  }
+
+  .logo-mark {
+    background: var(--logo);
+  }
+
+  .logo-header {
+    gap: 3px;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+  }
+
+  .logo-header .logo-mark {
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+  }
+
+  .logo-footer {
+    gap: 2px;
+    font-size: 16px;
+  }
+
+  .logo-footer .logo-mark {
+    width: 5px;
+    height: 5px;
+    border-radius: 1px;
+  }
+
+  @media (max-width: 767px) {
+    .logo-header {
+      font-size: 20px;
+    }
+
+    .logo-header .logo-mark {
+      width: 6px;
+      height: 6px;
+    }
+  }
+</style>

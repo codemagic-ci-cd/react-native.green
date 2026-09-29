@@ -1,0 +1,158 @@
+---
+import { cellKind, cellResult, type Package, type ReactNativeLine } from '../../lib/compat';
+import { CHECKS, KIND_LABEL, OUTCOME_ICON, OUTCOME_LABEL, outcomeOf, rnTitle } from '../../lib/view';
+import Icon from '../Icon.astro';
+
+// Phones only: every library line on the selected React Native version, replacing the
+// checks panel and badge card.
+interface Props {
+  pkg: Package;
+  reactNative: ReactNativeLine[];
+  selectedRn: string;
+}
+
+const { pkg, reactNative, selectedRn } = Astro.props;
+---
+
+<section aria-label="Releases on the selected React Native version" class="version-list mobile-only">
+  {
+    reactNative.map((rn) => (
+      <div class="for-version" data-list={rn.line} hidden={rn.line !== selectedRn}>
+        <h2>On React Native {rnTitle(rn)}</h2>
+        <ul class="items card">
+          {pkg.lines.map((line) => {
+            const kind = cellKind(pkg, line.line, rn.line);
+            const result = cellResult(pkg, line.line, rn.line);
+            return (
+              <li class="item">
+                <div class="item-head">
+                  <span class="item-label">{line.line}.x</span>
+                  <span class="item-version mono truncate" title={`v${line.version}`}>v{line.version}</span>
+                  <span class:list={['status', `status-${kind}`]}>{KIND_LABEL[kind]}</span>
+                </div>
+                <ul class="item-checks">
+                  {CHECKS.map((check) => {
+                    const outcome = outcomeOf(result?.checks[check.key]);
+                    return (
+                      <li class:list={['item-check', `text-${outcome}`]}>
+                        <Icon name={OUTCOME_ICON[outcome]} size={14} />
+                        <span>{check.short}</span>
+                        <span class="sr-only">{OUTCOME_LABEL[outcome]}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    ))
+  }
+</section>
+
+<style>
+  .for-version {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  h2 {
+    font-size: 18px;
+    line-height: 1.35;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .items {
+    padding: 0 20px;
+  }
+
+  .item {
+    padding: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .item:first-child {
+    border-top-color: transparent;
+  }
+
+  .item-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .item-label {
+    flex-shrink: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .item-version {
+    flex-grow: 1;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .status {
+    flex-shrink: 0;
+    height: 28px;
+    padding: 0 12px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .status-yes {
+    background: var(--yes-bg);
+    color: var(--yes-text);
+  }
+
+  .status-no {
+    background: var(--no-bg);
+    color: var(--no-text);
+  }
+
+  .status-queued {
+    background: var(--wait-bg);
+    color: var(--status-queued-text);
+  }
+
+  .item-checks {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+  }
+
+  .item-check {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .text-pass {
+    color: var(--pass-text);
+  }
+
+  .text-fail {
+    color: var(--fail-text);
+  }
+
+  .text-wait {
+    color: var(--wait-text);
+  }
+</style>
