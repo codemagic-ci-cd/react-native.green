@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { client, ensurePull, GitHubError, isRepoSlug, slugFromRemoteUrl } from './github.mjs';
+import { checkPushAccess, client, ensurePull, GitHubError, isRepoSlug, pickRepository, slugFromRemoteUrl } from './github.mjs';
 
 const TOKEN = 'ghp_example_not_a_real_token';
 
@@ -46,7 +46,7 @@ describe('client', () => {
       'GET https://api.github.com/repos/o/old': { status: 301, headers: { location: 'https://api.github.com/repositories/42' } },
       'GET https://api.github.com/repositories/42': { body: { full_name: 'o/new' } },
     });
-    expect(await client({ token: TOKEN, fetchImpl }).getRepo('o/old')).toEqual({ fullName: 'o/new' });
+    expect(await client({ token: TOKEN, fetchImpl }).getRepo('o/old')).toEqual({ fullName: 'o/new', canPush: null });
     expect(requests.map((r) => r.url)).toEqual(['https://api.github.com/repos/o/old', 'https://api.github.com/repositories/42']);
   });
 
@@ -111,5 +111,61 @@ describe('ensurePull', () => {
   it('passes on any other failure', async () => {
     const api = fake({ createError: new GitHubError('forbidden', 403) });
     await expect(ensurePull(api, 'o/n', args)).rejects.toThrow(/forbidden/);
+  });
+});
+
+describe('pickRepository', () => {
+  const origin = (url) => async () => url;
+
+  it('takes COMPAT_REPOSITORY first, then CM_REPO_SLUG, then the origin remote', async () => {
+    const env = { COMPAT_REPOSITORY: 'o/set', CM_REPO_SLUG: 'o/codemagic' };
+    expect(await pickRepository(env, origin('git@github.com:o/origin.git'))).toEqual({ slug: 'o/set', source: 'COMPAT_REPOSITORY' });
+    expect(await pickRepository({ CM_REPO_SLUG: 'o/codemagic' }, origin('git@github.com:o/origin.git'))).toEqual({ slug: 'o/codemagic', source: 'CM_REPO_SLUG' });
+    expect(await pickRepository({}, origin('git@github.com:o/origin.git'))).toEqual({ slug: 'o/origin', source: 'the origin remote' });
+  });
+
+  it('asks for the origin remote only when neither variable is set', async () => {
+    let asked = false;
+    await pickRepository({ COMPAT_REPOSITORY: 'o/set' }, async () => ((asked = true), null));
+    expect(asked).toBe(false);
+  });
+
+  it('refuses a name that is not owner/name, and an origin that is not on github.com', async () => {
+    expect(await pickRepository({ COMPAT_REPOSITORY: 'https://github.com/o/n' }, origin(null))).toEqual({ error: 'COMPAT_REPOSITORY is not an owner/name repository name.' });
+    expect((await pickRepository({}, origin('/tmp/remote.git'))).error).toMatch(/Could not tell the repository/);
+  });
+});
+
+describe('checkPushAccess', () => {
+  const check = (answer) => {
+    const { fetchImpl, requests } = stub({ 'GET https://api.github.com/repos/o/n': answer });
+    return { result: checkPushAccess(client({ token: TOKEN, fetchImpl, wait: async () => {} }), 'o/n'), requests };
+  };
+  const causes = /Likely causes: the repository name is wrong or the repository was renamed \(set COMPAT_REPOSITORY in codemagic\.yaml\); the organization has not approved the token yet; o\/n is not among the token's selected repositories; or the token's Contents permission is not read and write\./;
+
+  it('passes when the token can push, with one lookup', async () => {
+    const { result, requests } = check({ body: { full_name: 'o/n', permissions: { push: true } } });
+    await expect(result).resolves.toBeUndefined();
+    expect(requests).toHaveLength(1);
+  });
+
+  it('fails on 404, naming the repository and the likely causes', async () => {
+    const { result } = check({ status: 404, body: { message: 'Not Found' } });
+    await expect(result).rejects.toThrow(/GitHub does not show o\/n to the token \(404\)/);
+    await expect(check({ status: 404, body: {} }).result).rejects.toThrow(causes);
+  });
+
+  it('fails when the token can read but not push', async () => {
+    const answer = { body: { full_name: 'o/n', permissions: { push: false, pull: true } } };
+    await expect(check(answer).result).rejects.toThrow(/The token can read o\/n but not push to it/);
+    await expect(check(answer).result).rejects.toThrow(causes);
+  });
+
+  it('passes when the answer does not say whether the token can push', async () => {
+    await expect(check({ body: { full_name: 'o/n' } }).result).resolves.toBeUndefined();
+  });
+
+  it('passes on other failures', async () => {
+    await expect(check({ status: 401, body: { message: 'Bad credentials' } }).result).rejects.toThrow(/Could not read o\/n from GitHub: .*401/);
   });
 });

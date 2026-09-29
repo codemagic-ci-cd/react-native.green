@@ -10,9 +10,10 @@
 //
 //   node --experimental-strip-types scripts/compat/open-pr.mjs
 //
-// Environment: GITHUB_TOKEN (group default); the COMPAT_* inputs; CM_REPO_SLUG (else the origin
-// remote); COMPAT_BRANCH / CM_BRANCH (default main); CM_PROJECT_ID and CM_BUILD_ID for the build link;
-// COMPAT_REMOTE_URL to push somewhere other than github.com (local trials).
+// Environment: GITHUB_TOKEN (group default); the COMPAT_* inputs; COMPAT_REPOSITORY (owner/name, set
+// in codemagic.yaml), else CM_REPO_SLUG, else the origin remote; COMPAT_BRANCH / CM_BRANCH (default
+// main); CM_PROJECT_ID and CM_BUILD_ID for the build link; COMPAT_REMOTE_URL to push somewhere other
+// than github.com (local trials).
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -20,7 +21,7 @@ import { parseResultArtifact, MAX_RESULT_BYTES, RESULT_FILE } from './lib/artifa
 import { CATALOG_FILE, parseCatalogText } from './lib/catalog.mjs';
 import { outDir, REPO_ROOT, resultsPath } from './lib/config.mjs';
 import { AUTHOR, credentialArgs, ISOLATED_GIT_ARGS, ISOLATED_GIT_ENV } from './lib/git.mjs';
-import { client, ensurePull, isRepoSlug, slugFromRemoteUrl } from './lib/github.mjs';
+import { checkPushAccess, client, ensurePull, pickRepository } from './lib/github.mjs';
 import { validateCheckInputs } from './lib/inputs.mjs';
 import { formatJson } from './lib/json-format.mjs';
 import { capture, fail, run } from './lib/proc.mjs';
@@ -54,17 +55,16 @@ const gitEnv = { ...ISOLATED_GIT_ENV };
 const git = (args, cwd) => run('git', [...ISOLATED_GIT_ARGS, ...credentialArgs(env), ...args], { cwd, env: gitEnv, secrets: true });
 const gitOut = (args, cwd) => capture('git', [...ISOLATED_GIT_ARGS, ...credentialArgs(env), ...args], { cwd, env: gitEnv, secrets: true });
 
-let slug = env.CM_REPO_SLUG;
-if (slug === undefined || slug === '') {
+const picked = await pickRepository(env, async () => {
   const origin = await capture('git', ['remote', 'get-url', 'origin'], { cwd: REPO_ROOT });
-  slug = origin.code === 0 ? slugFromRemoteUrl(origin.stdout) : null;
-  if (!slug) fail('Could not tell the repository: CM_REPO_SLUG is not set and the origin remote is not a github.com repository.');
-}
-if (!isRepoSlug(slug)) fail('CM_REPO_SLUG is not an owner/name repository name.');
-
+  return origin.code === 0 ? origin.stdout : null;
+});
+if (picked.error) fail(picked.error);
+// The name is used as given, for every API call and for the push; this lookup only checks the token.
+const fullName = picked.slug;
 const api = client({ token: env.GITHUB_TOKEN });
-// The repository was renamed once; GitHub's answer gives today's name, which a POST needs.
-const { fullName } = await api.getRepo(slug).catch((error) => fail(`Could not read the repository from GitHub: ${error.message}`));
+await checkPushAccess(api, fullName).catch((error) => fail(error.message));
+say(`Sending the result to ${fullName} (from ${picked.source}).`);
 const remote = env.COMPAT_REMOTE_URL || `https://github.com/${fullName}.git`;
 
 const base = env.COMPAT_BRANCH || env.CM_BRANCH || 'main';

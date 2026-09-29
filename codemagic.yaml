@@ -32,6 +32,8 @@ workflows:
         COMPAT_PACKAGE: ${{ inputs.package }}
         COMPAT_LIBRARY_VERSION: ${{ inputs.library_version }}
         COMPAT_REACT_NATIVE_VERSION: ${{ inputs.react_native_version }}
+        # Where the pull request goes. Change it for a fork or after a rename.
+        COMPAT_REPOSITORY: codemagic-ci-cd/react-native.green
       node: 22
       java: 17
       xcode: latest
