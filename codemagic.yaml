@@ -43,6 +43,9 @@ workflows:
         - $HOME/Library/Caches/CocoaPods
     scripts:
       # Setup. A failure here fails the build; there is no result, so nothing is recorded.
+      # First, before any library code is on the machine: can the token push? (Node's own modules only.)
+      - name: Check the token
+        script: node scripts/compat/check-token.mjs
       - name: Install the catalog parser
         script: npm ci --ignore-scripts
       - name: Validate inputs

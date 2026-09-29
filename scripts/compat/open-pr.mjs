@@ -19,12 +19,13 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { parseResultArtifact, MAX_RESULT_BYTES, RESULT_FILE } from './lib/artifact.mjs';
 import { CATALOG_FILE, parseCatalogText } from './lib/catalog.mjs';
-import { outDir, REPO_ROOT, resultsPath } from './lib/config.mjs';
-import { AUTHOR, classifyPushFailure, credentialArgs, deniedMessage, ISOLATED_GIT_ARGS, ISOLATED_GIT_ENV, redact } from './lib/git.mjs';
-import { client, ensurePull, pickRepository } from './lib/github.mjs';
+import { outDir, resultsPath } from './lib/config.mjs';
+import { AUTHOR } from './lib/git.mjs';
+import { client, ensurePull } from './lib/github.mjs';
 import { validateCheckInputs } from './lib/inputs.mjs';
 import { formatJson } from './lib/json-format.mjs';
-import { capture, captureAll, fail, run } from './lib/proc.mjs';
+import { capture, fail } from './lib/proc.mjs';
+import { checkWriteAccess, judgePush, PushDenied, pushTarget, tokenGit } from './lib/push.mjs';
 import { branchFor, changedCells, bodyFor, nextResultsFile, titleFor } from './lib/pull-request.mjs';
 import { buildUrlFor, composeCell, timestamp } from './lib/record.mjs';
 import { validateData } from './lib/validate.mjs';
@@ -50,26 +51,14 @@ const testedAt = timestamp();
 const buildUrl = env.CM_PROJECT_ID && env.CM_BUILD_ID ? buildUrlFor(env.CM_PROJECT_ID, env.CM_BUILD_ID) : undefined;
 
 // ---- Where to send it ----
-const gitEnv = { ...ISOLATED_GIT_ENV };
-/** git with the token available through the credential helper, and nothing from the machine's git configuration. */
-const git = (args, cwd) => run('git', [...ISOLATED_GIT_ARGS, ...credentialArgs(env), ...args], { cwd, env: gitEnv, secrets: true });
-const gitOut = (args, cwd) => capture('git', [...ISOLATED_GIT_ARGS, ...credentialArgs(env), ...args], { cwd, env: gitEnv, secrets: true });
-/** Like git, but keeps its output (stdout and stderr) to be read, with the token taken out in case any tool echoes it. */
-const gitAll = async (args, cwd) => {
-  const result = await captureAll('git', [...ISOLATED_GIT_ARGS, ...credentialArgs(env), ...args], { cwd, env: gitEnv, secrets: true });
-  return { code: result.code, output: redact(result.output, env.GITHUB_TOKEN).trim() };
-};
-
-const picked = await pickRepository(env, async () => {
-  const origin = await capture('git', ['remote', 'get-url', 'origin'], { cwd: REPO_ROOT });
-  return origin.code === 0 ? origin.stdout : null;
-});
-if (picked.error) fail(picked.error);
+const gitTools = tokenGit(env);
+const { run: git, out: gitOut, all: gitAll } = gitTools;
+const target = await pushTarget(env);
+if (target.error) fail(target.error);
 // The name is used as given, for every API call and for the push.
-const fullName = picked.slug;
+const { fullName, remote } = target;
 const api = client({ token: env.GITHUB_TOKEN });
-say(`Sending the result to ${fullName} (from ${picked.source}).`);
-const remote = env.COMPAT_REMOTE_URL || `https://github.com/${fullName}.git`;
+say(`Sending the result to ${fullName} (from ${target.source}).`);
 
 const base = env.COMPAT_BRANCH || env.CM_BRANCH || 'main';
 if ((await capture('git', ['check-ref-format', '--branch', base])).code !== 0) fail('The base branch name is not a valid branch name.');
@@ -80,21 +69,6 @@ const inputs = {
   reactNativeVersion: env.COMPAT_REACT_NATIVE_VERSION,
   record: 'true',
 };
-
-/** A push the remote refused; trying again cannot help. */
-class PushDenied extends Error {}
-
-/** Throws for a failed push unless the branch only moved; returns true when it did. */
-function judgePush({ code, output }, what) {
-  if (code === 0) return false;
-  const failure = classifyPushFailure(output);
-  if (failure.kind === 'moved') return true;
-  if (failure.kind === 'denied') {
-    if (output) say(output);
-    throw new PushDenied(deniedMessage(fullName, failure.account));
-  }
-  throw new Error(`${what} failed; git said:\n${output || '(nothing)'}`);
-}
 
 let writeChecked = false;
 
@@ -129,7 +103,7 @@ async function attempt(dir) {
   // Can the token write? A dry run of pushing the base commit to the package's branch reaches the
   // remote's receive-pack with the token and changes nothing, so a refusal shows before any work.
   if (!writeChecked) {
-    judgePush(await gitAll(['push', '--dry-run', '--force', '--quiet', remote, `HEAD:refs/heads/${branch}`], dir), 'The write check');
+    await checkWriteAccess(gitTools, { remote, branch, cwd: dir, repository: fullName, say });
     writeChecked = true;
   }
   const readBase = () => (existsSync(join(dir, file)) ? JSON.parse(readFileSync(join(dir, file), 'utf8')) : undefined);
@@ -180,7 +154,7 @@ async function attempt(dir) {
   if ((await git(['add', '--', file], dir)) !== 0) throw new Error('git add failed');
   if ((await git([...AUTHOR, 'commit', '--quiet', '--no-verify', '-m', title], dir)) !== 0) throw new Error('git commit failed');
   const pushed = await gitAll(['push', '--quiet', `--force-with-lease=refs/heads/${branch}:${tip}`, remote, `HEAD:refs/heads/${branch}`], dir);
-  const moved = judgePush(pushed, 'The push');
+  const moved = judgePush(pushed, { what: 'The push', repository: fullName, say });
   return { pushed: !moved, branch, name, title, body: bodyFor(name, cells, base), cells: cells.length };
 }
 

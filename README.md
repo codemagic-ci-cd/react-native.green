@@ -144,12 +144,14 @@ Commands are argument lists run without a shell. Every folder must stay inside t
 `codemagic.yaml` defines one workflow, **`compatibility-check`**. Its scripts are in `scripts/compat/`:
 plain Node, no build step, with the logic in `scripts/compat/lib/` and its tests beside it.
 
-A person starts it by hand, for one cell: one library version on one React Native version. It
-checks the library out at its release tag, points the library's own demo app at that React Native
-version, installs, runs the library's test suite, builds the demo app for Android and for iOS, and
-saves the three outcomes as `result.json`. It follows the package's settings in the catalog. Then it
-sends the result to this repository as a pull request. **Every run opens or updates the package's
-pull request**; there is no run that checks without sending the result.
+A person starts it by hand, for one cell: one library version on one React Native version. Its
+first step, "Check the token", checks that `GITHUB_TOKEN` may push to the repository, before anything
+is installed, so a token that cannot fails the build in seconds. It then checks the library out at
+its release tag, points the library's own demo app at that React Native version, installs, runs the
+library's test suite, builds the demo app for Android and for iOS, and saves the three outcomes as
+`result.json`. It follows the package's settings in the catalog. Then it sends the result to this
+repository as a pull request. **Every run opens or updates the package's pull request**; there is no
+run that checks without sending the result.
 
 **One pull request per package.** Results for a package collect on the branch `compat/<package>`
 (`compat/@react-navigation/core`; a character git does not allow in a branch name is written as
@@ -233,7 +235,8 @@ this repository or open pull requests with it. What limits the damage:
 2. In the app's settings, create the variable group `default` with `GITHUB_TOKEN` (see
    "Credentials"), and mark the value **Secret**.
 3. Start `compatibility-check` by hand for one cell (see "Starting one check by hand"). The first
-   build already opens a pull request for the package. Read the build's logs.
+   build already opens a pull request for the package. Read the build's logs. If its first step,
+   "Check the token", fails, fix the token as its message says before trying anything else.
 4. Review the pull request and merge it.
 
 There is no schedule, no Codemagic API token and no webhook.
