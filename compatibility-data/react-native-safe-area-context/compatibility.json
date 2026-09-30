@@ -1,5 +1,15 @@
 {
   "schemaVersion": 2,
   "package": "react-native-safe-area-context",
-  "results": {}
+  "results": {
+    "5.10": {
+      "0.86": {
+        "status": "incompatible",
+        "tested": { "library": "5.10.0", "reactNative": "0.86.3" },
+        "checks": { "buildIos": "failed", "buildAndroid": "passed", "tests": "passed" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5cb083ff0a9a53ab063",
+        "testedAt": "2026-09-30T14:00:21Z"
+      }
+    }
+  }
 }
