@@ -3,6 +3,13 @@
   "package": "lottie-react-native",
   "results": {
     "7.5": {
+      "0.86": {
+        "status": "compatible",
+        "tested": { "library": "7.5.0", "reactNative": "0.86.3" },
+        "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "none" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5ca083ff0a9a53ab05d",
+        "testedAt": "2026-09-30T13:36:05Z"
+      },
       "0.87": {
         "status": "compatible",
         "tested": { "library": "7.5.0", "reactNative": "0.87.1" },
@@ -12,6 +19,13 @@
       }
     },
     "7.4": {
+      "0.86": {
+        "status": "compatible",
+        "tested": { "library": "7.4.0", "reactNative": "0.86.3" },
+        "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "none" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5ca083ff0a9a53ab05e",
+        "testedAt": "2026-09-30T13:38:59Z"
+      },
       "0.87": {
         "status": "compatible",
         "tested": { "library": "7.4.0", "reactNative": "0.87.1" },
@@ -21,6 +35,13 @@
       }
     },
     "7.3": {
+      "0.86": {
+        "status": "incompatible",
+        "tested": { "library": "7.3.8", "reactNative": "0.86.3" },
+        "checks": { "buildIos": "passed", "buildAndroid": "failed", "tests": "none" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5ca083ff0a9a53ab05f",
+        "testedAt": "2026-09-30T13:40:21Z"
+      },
       "0.87": {
         "status": "incompatible",
         "tested": { "library": "7.3.8", "reactNative": "0.87.1" },
