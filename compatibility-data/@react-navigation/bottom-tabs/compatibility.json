@@ -1,5 +1,54 @@
 {
   "schemaVersion": 2,
   "package": "@react-navigation/bottom-tabs",
-  "results": {}
+  "results": {
+    "7.19": {
+      "0.86": {
+        "status": "compatible",
+        "tested": { "library": "7.19.2", "reactNative": "0.86.3" },
+        "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5c7083ff0a9a53ab050",
+        "testedAt": "2026-09-30T12:58:23Z"
+      },
+      "0.87": {
+        "status": "incompatible",
+        "tested": { "library": "7.19.2", "reactNative": "0.87.1" },
+        "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "passed" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5bc083ff0a9a53ab019",
+        "testedAt": "2026-09-30T11:48:31Z"
+      }
+    },
+    "7.18": {
+      "0.86": {
+        "status": "compatible",
+        "tested": { "library": "7.18.18", "reactNative": "0.86.3" },
+        "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5c8083ff0a9a53ab052",
+        "testedAt": "2026-09-30T13:00:08Z"
+      },
+      "0.87": {
+        "status": "incompatible",
+        "tested": { "library": "7.18.18", "reactNative": "0.87.1" },
+        "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "passed" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5bd083ff0a9a53ab01b",
+        "testedAt": "2026-09-30T11:50:38Z"
+      }
+    },
+    "7.17": {
+      "0.86": {
+        "status": "incompatible",
+        "tested": { "library": "7.17.2", "reactNative": "0.86.3" },
+        "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "failed" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5c8083ff0a9a53ab054",
+        "testedAt": "2026-09-30T12:59:13Z"
+      },
+      "0.87": {
+        "status": "incompatible",
+        "tested": { "library": "7.17.2", "reactNative": "0.87.1" },
+        "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "failed" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5bd083ff0a9a53ab01d",
+        "testedAt": "2026-09-30T11:50:13Z"
+      }
+    }
+  }
 }
