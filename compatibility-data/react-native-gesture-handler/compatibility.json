@@ -1,5 +1,24 @@
 {
   "schemaVersion": 2,
   "package": "react-native-gesture-handler",
-  "results": {}
+  "results": {
+    "3.3": {
+      "0.87": {
+        "status": "incompatible",
+        "tested": { "library": "3.3.0", "reactNative": "0.87.1" },
+        "checks": { "buildIos": "failed", "buildAndroid": "passed", "tests": "passed" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5c4083ff0a9a53ab038",
+        "testedAt": "2026-09-30T12:26:50Z"
+      }
+    },
+    "3.2": {
+      "0.87": {
+        "status": "incompatible",
+        "tested": { "library": "3.2.1", "reactNative": "0.87.1" },
+        "checks": { "buildIos": "failed", "buildAndroid": "passed", "tests": "passed" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5c4083ff0a9a53ab039",
+        "testedAt": "2026-09-30T12:25:43Z"
+      }
+    }
+  }
 }
