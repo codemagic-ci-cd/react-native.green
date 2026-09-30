@@ -1,5 +1,33 @@
 {
   "schemaVersion": 2,
   "package": "react-native-screens",
-  "results": {}
+  "results": {
+    "4.28": {
+      "0.87": {
+        "status": "incompatible",
+        "tested": { "library": "4.28.0", "reactNative": "0.87.1" },
+        "checks": { "buildIos": "failed", "buildAndroid": "passed", "tests": "none" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5c1083ff0a9a53ab02e",
+        "testedAt": "2026-09-30T12:11:56Z"
+      }
+    },
+    "4.27": {
+      "0.87": {
+        "status": "incompatible",
+        "tested": { "library": "4.27.0", "reactNative": "0.87.1" },
+        "checks": { "buildIos": "failed", "buildAndroid": "passed", "tests": "none" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5c1083ff0a9a53ab02f",
+        "testedAt": "2026-09-30T12:10:45Z"
+      }
+    },
+    "4.26": {
+      "0.87": {
+        "status": "incompatible",
+        "tested": { "library": "4.26.2", "reactNative": "0.87.1" },
+        "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "none" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5c1083ff0a9a53ab030",
+        "testedAt": "2026-09-30T12:06:25Z"
+      }
+    }
+  }
 }
