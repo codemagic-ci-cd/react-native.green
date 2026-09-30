@@ -1,5 +1,22 @@
 {
   "schemaVersion": 2,
   "package": "react-native-bootsplash",
-  "results": {}
+  "results": {
+    "7.3": {
+      "0.86": {
+        "status": "incompatible",
+        "tested": { "library": "7.3.3", "reactNative": "0.86.3" },
+        "checks": { "buildIos": "failed", "buildAndroid": "passed", "tests": "none" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5ca083ff0a9a53ab060",
+        "testedAt": "2026-09-30T13:45:00Z"
+      },
+      "0.87": {
+        "status": "incompatible",
+        "tested": { "library": "7.3.3", "reactNative": "0.87.1" },
+        "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "none" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5c0083ff0a9a53ab028",
+        "testedAt": "2026-09-30T11:58:47Z"
+      }
+    }
+  }
 }
