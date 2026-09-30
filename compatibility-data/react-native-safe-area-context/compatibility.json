@@ -3,6 +3,13 @@
   "package": "react-native-safe-area-context",
   "results": {
     "5.10": {
+      "0.85": {
+        "status": "compatible",
+        "tested": { "library": "5.10.0", "reactNative": "0.85.3" },
+        "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5d4083ff0a9a53ab092",
+        "testedAt": "2026-09-30T16:53:07Z"
+      },
       "0.86": {
         "status": "incompatible",
         "tested": { "library": "5.10.0", "reactNative": "0.86.3" },
@@ -12,6 +19,13 @@
       }
     },
     "5.9": {
+      "0.85": {
+        "status": "compatible",
+        "tested": { "library": "5.9.1", "reactNative": "0.85.3" },
+        "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5d4083ff0a9a53ab093",
+        "testedAt": "2026-09-30T16:48:57Z"
+      },
       "0.86": {
         "status": "incompatible",
         "tested": { "library": "5.9.1", "reactNative": "0.86.3" },
@@ -21,6 +35,13 @@
       }
     },
     "5.8": {
+      "0.85": {
+        "status": "compatible",
+        "tested": { "library": "5.8.1", "reactNative": "0.85.3" },
+        "checks": { "buildIos": "passed", "buildAndroid": "passed", "tests": "passed" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5d5083ff0a9a53ab094",
+        "testedAt": "2026-09-30T16:53:57Z"
+      },
       "0.86": {
         "status": "incompatible",
         "tested": { "library": "5.8.1", "reactNative": "0.86.3" },
