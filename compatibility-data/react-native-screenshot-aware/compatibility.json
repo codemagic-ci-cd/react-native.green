@@ -1,5 +1,15 @@
 {
   "schemaVersion": 2,
   "package": "react-native-screenshot-aware",
-  "results": {}
+  "results": {
+    "2.1": {
+      "0.87": {
+        "status": "incompatible",
+        "tested": { "library": "2.1.3", "reactNative": "0.87.1" },
+        "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "passed" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcee4f083ff0a9a53aae0e",
+        "testedAt": "2026-09-30T11:17:25Z"
+      }
+    }
+  }
 }
