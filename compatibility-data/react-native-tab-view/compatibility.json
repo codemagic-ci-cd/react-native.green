@@ -1,5 +1,33 @@
 {
   "schemaVersion": 2,
   "package": "react-native-tab-view",
-  "results": {}
+  "results": {
+    "4.3": {
+      "0.87": {
+        "status": "incompatible",
+        "tested": { "library": "4.3.2", "reactNative": "0.87.1" },
+        "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "passed" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5c2083ff0a9a53ab034",
+        "testedAt": "2026-09-30T12:14:54Z"
+      }
+    },
+    "4.2": {
+      "0.87": {
+        "status": "incompatible",
+        "tested": { "library": "4.2.2", "reactNative": "0.87.1" },
+        "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "passed" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5c4083ff0a9a53ab035",
+        "testedAt": "2026-09-30T12:15:29Z"
+      }
+    },
+    "4.1": {
+      "0.87": {
+        "status": "incompatible",
+        "tested": { "library": "4.1.3", "reactNative": "0.87.1" },
+        "checks": { "buildIos": "failed", "buildAndroid": "failed", "tests": "failed" },
+        "buildUrl": "https://codemagic.io/app/6abb237e93eec1a23c19ef91/build/6abcf5c4083ff0a9a53ab037",
+        "testedAt": "2026-09-30T12:15:21Z"
+      }
+    }
+  }
 }
